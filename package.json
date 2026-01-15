@@ -1,0 +1,19 @@
+{
+  "name": "remote-claude",
+  "version": "1.0.0",
+  "description": "Remote Claude Code via DingTalk",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "dingtalk-stream": "^2.1.4",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.0"
+  }
+}
