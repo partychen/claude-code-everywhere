@@ -39,10 +39,17 @@ export class DingTalkNotifier {
   /**
    * 通知任务已接收
    */
-  async notifyTaskReceived(workingDir: string, defaultWorkingDir: string, newSession: boolean): Promise<void> {
-    const dirInfo = workingDir !== defaultWorkingDir ? `\n工作目录: ${workingDir}` : '';
+  async notifyTaskReceived(workingDir: string, newSession: boolean): Promise<void> {
+    const dirInfo = `\n工作目录: ${workingDir}`;
     const sessionInfo = newSession ? '\n(新会话)' : '';
     await this.sendText(`✅ 任务已接收，正在处理中...${dirInfo}${sessionInfo}`);
+  }
+
+  /**
+   * 通知错误
+   */
+  async notifyError(message: string): Promise<void> {
+    await this.sendText(`❌ ${message}`);
   }
 
   /**

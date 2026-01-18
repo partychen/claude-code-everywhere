@@ -5,9 +5,16 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "test": "tsc && node --test tests/*.test.mjs",
+    "test:watch": "node --test --watch tests/*.test.mjs",
+    "test:path": "tsc && node --test tests/path-validator.test.mjs",
+    "test:command": "node --test tests/command-parser.test.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.12",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.6.2",
     "dingtalk-stream": "^2.1.4",
     "dotenv": "^17.2.3"
   },

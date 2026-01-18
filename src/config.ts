@@ -1,15 +1,16 @@
 import 'dotenv/config';
+import { resolve } from 'path';
 
 export interface Config {
   dingtalk: {
     clientId: string;
     clientSecret: string;
   };
-  claude: {
-    defaultWorkingDir: string;
+  db: {
+    path: string;
   };
-  deploy: {
-    autoDeployDirs: string[];
+  security: {
+    allowedRootDir: string;  // 允许的根目录（必需）
   };
 }
 
@@ -25,17 +26,24 @@ function getEnvOrDefault(key: string, defaultValue: string): string {
   return process.env[key] || defaultValue;
 }
 
+/**
+ * 加载基础配置（仅环境变量）
+ * 工作目录和自动部署配置已迁移到数据库
+ */
 export function loadConfig(): Config {
+  // 默认数据库路径：项目根目录下的 data 文件夹
+  const defaultDbPath = resolve(import.meta.dirname, '../data');
+
   return {
     dingtalk: {
       clientId: getEnvOrThrow('DINGTALK_CLIENT_ID'),
       clientSecret: getEnvOrThrow('DINGTALK_CLIENT_SECRET'),
     },
-    claude: {
-      defaultWorkingDir: getEnvOrDefault('CLAUDE_WORKING_DIR', process.cwd()),
+    db: {
+      path: getEnvOrDefault('DB_PATH', defaultDbPath),
     },
-    deploy: {
-      autoDeployDirs: process.env.AUTO_DEPLOY_DIRS?.split(',').map(d => d.trim()) || [],
+    security: {
+      allowedRootDir: getEnvOrThrow('ALLOWED_ROOT_DIR'),
     },
   };
 }

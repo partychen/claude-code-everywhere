@@ -1,17 +1,26 @@
 import { DWClientDownStream } from 'dingtalk-stream';
-import { Config } from '../config.js';
-import { AppState } from '../state.js';
+
+import { CommandHandler } from './command-handler.js';
+import { WorkingDirectoryRepository } from '../repositories/working-directory.js';
+import { executeTask } from '../services/agent.js';
 import { parseMessage } from '../services/message-parser.js';
-import { runClaudeCode } from '../services/claude.js';
-import { shouldAutoDeploy, runDeploy } from '../services/deploy.js';
 import { DingTalkNotifier } from '../services/notifier.js';
+import { PreviewService } from '../services/preview.js';
+import { AppState } from '../state.js';
+import { WorkingDirectory } from '../types/database.js';
 import { logger } from '../utils/logger.js';
 
 export class MessageHandler {
+  private commandHandler: CommandHandler;
+
   constructor(
-    private config: Config,
-    private state: AppState
-  ) {}
+    private state: AppState,
+    private workingDirRepo: WorkingDirectoryRepository,
+    private previewService: PreviewService,
+    allowedRootDir: string
+  ) {
+    this.commandHandler = new CommandHandler(workingDirRepo, previewService, allowedRootDir);
+  }
 
   /**
    * 处理钉钉机器人消息
@@ -41,6 +50,20 @@ export class MessageHandler {
       return { text: '请输入任务内容' };
     }
 
+    // 检查是否为命令
+    if (this.commandHandler.isCommand(content)) {
+      logger.info('识别为命令，进入命令处理流程');
+      const result = await this.commandHandler.handle(content);
+
+      if (result.success) {
+        await notifier.sendMarkdown('命令执行结果', result.message);
+      } else {
+        await notifier.sendText(result.message);
+      }
+
+      return { text: result.success ? '命令执行成功' : '命令执行失败' };
+    }
+
     // 检查是否有任务在执行
     if (this.state.hasCurrentTask()) {
       const currentTask = this.state.getCurrentTask()!;
@@ -50,30 +73,50 @@ export class MessageHandler {
     }
 
     // 解析消息
-    const { workingDir, prompt, newSession } = parseMessage(
-      content,
-      this.config.claude.defaultWorkingDir
-    );
+    const parsed = parseMessage(content);
+    const { prompt, newSession, dirAlias } = parsed;
+    let { workingDir } = parsed;
+
+    // 解析工作目录配置
+    let dirConfig: WorkingDirectory | undefined;
+
+    if (dirAlias) {
+      // 使用别名查找
+      dirConfig = this.workingDirRepo.findByAlias(dirAlias);
+      if (!dirConfig) {
+        logger.warn(`未找到别名: ${dirAlias}`);
+        await notifier.notifyError(`未找到工作目录别名: ${dirAlias}`);
+        return { text: `未找到别名: ${dirAlias}` };
+      }
+      workingDir = dirConfig.path;
+    } else if (!workingDir) {
+      // 使用默认目录
+      dirConfig = this.workingDirRepo.findDefault();
+      workingDir = dirConfig?.path || process.cwd();
+    } else {
+      // 通过路径查找配置
+      dirConfig = this.workingDirRepo.findAll().find(d => d.path === workingDir);
+    }
 
     this.state.setCurrentTask(prompt);
 
     try {
       // 通知任务已接收
-      await notifier.notifyTaskReceived(
-        workingDir,
-        this.config.claude.defaultWorkingDir,
-        newSession
-      );
+      await notifier.notifyTaskReceived(workingDir, newSession);
 
-      // 执行 Claude Code
-      const output = await runClaudeCode({ prompt, workingDir, newSession });
+      // 执行 Claude Agent
+      const result = await executeTask({ prompt, workingDir, newSession });
+
+      if (!result.success) {
+        throw new Error(result.output);
+      }
 
       // 通知任务完成
-      await notifier.notifyTaskComplete(prompt, output);
+      await notifier.notifyTaskComplete(prompt, result.output);
 
-      // 检查是否需要自动部署
-      if (shouldAutoDeploy(workingDir, this.config.deploy.autoDeployDirs)) {
-        await this.handleDeploy(workingDir, notifier);
+      // 检查是否需要启动预览
+      if (dirConfig && dirConfig.preview_enabled) {
+        await this.handlePreview(dirConfig, notifier);
       }
 
       return { text: '任务完成' };
@@ -88,19 +131,26 @@ export class MessageHandler {
   }
 
   /**
-   * 处理自动部署
+   * 处理预览启动
    */
-  private async handleDeploy(workingDir: string, notifier: DingTalkNotifier): Promise<void> {
-    logger.info('检测到自动部署配置，开始部署...');
-    await notifier.notifyDeployStart();
+  private async handlePreview(dirConfig: WorkingDirectory, notifier: DingTalkNotifier): Promise<void> {
+    if (!dirConfig.start_cmd) {
+      logger.warn(`工作目录 "${dirConfig.alias}" 未配置启动命令，跳过预览`);
+      return;
+    }
+
+    logger.info('检测到预览配置，开始启动预览...');
 
     try {
-      const deployOutput = await runDeploy(workingDir);
-      await notifier.notifyDeploySuccess(deployOutput);
-    } catch (deployError) {
-      const errorMsg = deployError instanceof Error ? deployError.message : String(deployError);
-      logger.error('部署失败:', errorMsg);
-      await notifier.notifyDeployFailed(errorMsg);
+      const info = await this.previewService.start(dirConfig);
+      await notifier.sendMarkdown(
+        '✅ 预览已启动',
+        `**别名**: ${info.alias}\n**端口**: ${info.port}\n**URL**: ${info.tunnelUrl}\n\n请访问上述 URL 预览您的项目`
+      );
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error('预览启动失败:', errorMsg);
+      await notifier.sendText(`⚠️ 预览启动失败: ${errorMsg}`);
     }
   }
 }

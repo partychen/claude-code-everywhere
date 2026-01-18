@@ -20,4 +20,10 @@ export const logger = {
   warn: (message: string, ...args: any[]) => {
     console.warn(`[${getTimestamp()}]`, message, ...args);
   },
+
+  debug: (message: string, ...args: any[]) => {
+    if (process.env.DEBUG) {
+      console.log(`[${getTimestamp()}] [DEBUG]`, message, ...args);
+    }
+  },
 };

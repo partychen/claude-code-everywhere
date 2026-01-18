@@ -22,7 +22,9 @@ export class AppState {
     // 清理旧消息 ID（保留最近 N 条）
     if (this.processedMessages.size > this.maxMessagesCache) {
       const first = this.processedMessages.values().next().value;
-      this.processedMessages.delete(first);
+      if (first) {
+        this.processedMessages.delete(first);
+      }
     }
   }
 
