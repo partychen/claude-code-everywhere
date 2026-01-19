@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Remote Claude 是一个 Claude Code 增强工具，提供以下核心功能：
+Claude Code Everywhere 是一个 Claude Code 增强工具，提供以下核心功能：
 
 1. **远程触发**：通过钉钉机器人远程调用 Claude Code
 2. **预览管理**：Claude Code 任务完成后自动启动项目预览（通过 Cloudflare Tunnel）

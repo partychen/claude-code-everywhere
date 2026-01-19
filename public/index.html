@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Claude Code Everywhere 管理后台</title>
+  <link rel="icon" type="image/x-icon" href="/logo.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/logo-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/logo-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div style="max-width: 1200px; margin: 0 auto; padding: 1.5rem;">
+    <!-- 导航栏 -->
+    <div class="navbar glass-container">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <img src="/images/logo.png" alt="CC Logo" style="width: 48px; height: 48px; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.2));">
+        <h1 style="font-size: 1.75rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.2); letter-spacing: 0.5px;">
+          CC Everywhere
+        </h1>
+      </div>
+    </div>
+
+    <!-- Tab 导航 -->
+    <div class="glass-container" style="padding: 0.5rem; border-radius: 1rem; margin-bottom: 2rem;">
+      <div class="tab-nav">
+        <button id="tab-dirs" class="tab-btn active">📁 工作目录</button>
+        <button id="tab-previews" class="tab-btn">🌐 预览服务</button>
+        <button id="tab-system" class="tab-btn">⚙️ 系统信息</button>
+      </div>
+    </div>
+
+    <!-- 工作目录页面 -->
+    <div id="page-dirs" class="tab-content">
+      <div id="dir-list"></div>
+    </div>
+
+    <!-- 预览服务页面 -->
+    <div id="page-previews" class="tab-content hidden">
+      <div id="preview-list"></div>
+    </div>
+
+    <!-- 系统信息页面 -->
+    <div id="page-system" class="tab-content hidden">
+      <div id="system-info"></div>
+    </div>
+  </div>
+
+  <!-- FAB Menu Backdrop -->
+  <div id="fab-backdrop" class="fab-backdrop"></div>
+
+  <!-- 浮动添加按钮 -->
+  <button id="fab-add" class="fab" title="添加工作目录">
+    <span style="font-size: 1.75rem; line-height: 1;">➕</span>
+  </button>
+
+  <!-- 预览操作菜单 -->
+  <div id="fab-menu-preview" class="fab-menu">
+    <button id="fab-menu-toggle" class="fab fab-main" title="预览操作">
+      <span style="font-size: 1.5rem; line-height: 1;">⚙️</span>
+    </button>
+    <div class="fab-actions">
+      <button class="fab fab-action" data-action="refresh" title="刷新状态">
+        <span style="font-size: 1.25rem; line-height: 1;">🔄</span>
+      </button>
+      <button class="fab fab-action" data-action="stop-all" title="停止所有">
+        <span style="font-size: 1.25rem; line-height: 1;">🛑</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal 容器 -->
+  <div id="modal-container"></div>
+
+  <!-- 确认对话框容器 -->
+  <div id="confirm-dialog"></div>
+
+  <script src="/js/utils/confirm.js?v=2"></script>
+  <script src="/js/api.js?v=2"></script>
+  <script src="/js/components/DirectoryList.js?v=2"></script>
+  <script src="/js/components/PreviewList.js?v=2"></script>
+  <script src="/js/components/SystemInfo.js?v=2"></script>
+  <script src="/js/app.js?v=2"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # 使用手册
 
-完整的 Remote Claude 使用指南。
+完整的 Claude Code Everywhere 使用指南。
 
 ## 目录
 
@@ -535,7 +535,7 @@ A: 可能原因：
 
 **Q: 如何停止所有预览？**
 
-A: 使用 `/p xa` 命令或重启 Remote Claude 服务。
+A: 使用 `/p xa` 命令或重启 Claude Code Everywhere 服务。
 
 ### 消息格式相关
 

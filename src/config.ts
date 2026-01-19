@@ -12,6 +12,12 @@ export interface Config {
   security: {
     allowedRootDir: string;  // 允许的根目录（必需）
   };
+  web: {
+    enabled: boolean;
+    port: number;
+    authToken?: string;
+    allowedOrigins: string;
+  };
 }
 
 function getEnvOrThrow(key: string): string {
@@ -44,6 +50,12 @@ export function loadConfig(): Config {
     },
     security: {
       allowedRootDir: getEnvOrThrow('ALLOWED_ROOT_DIR'),
+    },
+    web: {
+      enabled: getEnvOrDefault('WEB_ENABLED', 'true') === 'true',
+      port: parseInt(getEnvOrDefault('WEB_PORT', '3001')),
+      authToken: process.env.WEB_AUTH_TOKEN,
+      allowedOrigins: getEnvOrDefault('WEB_ALLOWED_ORIGINS', 'http://localhost:3001'),
     },
   };
 }

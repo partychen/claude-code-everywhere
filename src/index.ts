@@ -6,6 +6,7 @@ import { DatabaseService } from './services/database.js';
 import { WorkingDirectoryRepository } from './repositories/working-directory.js';
 import { PreviewRepository } from './repositories/preview.js';
 import { PreviewService } from './services/preview.js';
+import { startWebServer } from './web/server.js';
 
 async function main() {
   // 加载配置
@@ -19,6 +20,22 @@ async function main() {
 
   // 初始化预览服务
   const previewService = new PreviewService(previewRepo);
+
+  // 清理僵尸预览记录
+  console.log('🧹 清理僵尸预览记录...');
+  await previewService.cleanupOrphanedPreviews();
+
+  // 启动 Web 服务器
+  if (config.web.enabled) {
+    await startWebServer({
+      port: config.web.port,
+      authToken: config.web.authToken,
+      allowedOrigins: config.web.allowedOrigins,
+      workingDirRepo,
+      previewService,
+      allowedRootDir: config.security.allowedRootDir,
+    });
+  }
 
   // 初始化状态
   const state = new AppState();

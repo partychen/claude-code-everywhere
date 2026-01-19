@@ -1,4 +1,4 @@
-# Remote Claude
+# Claude Code Everywhere
 
 通过钉钉远程控制 Claude Code，让 AI 编程助手随时待命。
 
@@ -14,8 +14,8 @@
 ### 1. 安装
 
 ```bash
-git clone https://github.com/your-org/remote-claude.git
-cd remote-claude
+git clone https://github.com/your-org/claude-code-everywhere.git
+cd claude-code-everywhere
 npm install
 ```
 

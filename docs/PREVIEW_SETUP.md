@@ -1,10 +1,10 @@
 # Cloudflare Tunnel 配置指南
 
-Remote Claude 的预览功能使用 Cloudflare Tunnel 将本地运行的项目暴露到公网，让您可以随时随地通过手机或其他设备访问预览。
+Claude Code Everywhere 的预览功能使用 Cloudflare Tunnel 将本地运行的项目暴露到公网，让您可以随时随地通过手机或其他设备访问预览。
 
 ## 前置要求
 
-在使用预览功能之前，需要在运行 Remote Claude 的服务器上安装 `cloudflared`。
+在使用预览功能之前，需要在运行 Claude Code Everywhere 的服务器上安装 `cloudflared`。
 
 ## 安装 cloudflared
 
@@ -65,7 +65,7 @@ cloudflared --version
 
 ### 工作原理
 
-Remote Claude 使用 Cloudflare Tunnel 的临时隧道功能（Quick Tunnels）：
+Claude Code Everywhere 使用 Cloudflare Tunnel 的临时隧道功能（Quick Tunnels）：
 
 - **无需注册**：不需要 Cloudflare 账号
 - **自动生成 URL**：每次启动自动生成临时的 `https://xxx.trycloudflare.com` URL
@@ -228,7 +228,7 @@ A: 有两种方式：
    @机器人 /p xa
    ```
 
-2. 重启 Remote Claude 服务：
+2. 重启 Claude Code Everywhere 服务：
    服务启动时会自动清理之前的预览服务
 
 ### Q: 预览 URL 会一直有效吗？
@@ -236,7 +236,7 @@ A: 有两种方式：
 A: 不会。预览 URL 的有效期取决于：
 
 1. **手动停止**：运行 `/p x` 命令
-2. **服务重启**：Remote Claude 服务重启时会停止所有预览
+2. **服务重启**：Claude Code Everywhere 服务重启时会停止所有预览
 3. **进程崩溃**：如果项目进程或 Tunnel 进程崩溃，URL 会失效
 
 ### Q: 可以同时运行多个预览吗？
@@ -326,4 +326,4 @@ cloudflared tunnel --url http://localhost:8000
 
 - [Cloudflare Tunnel 官方文档](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
 - [cloudflared GitHub](https://github.com/cloudflare/cloudflared)
-- [Remote Claude 使用手册](./USAGE.md)
+- [Claude Code Everywhere 使用手册](./USAGE.md)

@@ -1,4 +1,5 @@
 import { query } from '@anthropic-ai/claude-agent-sdk';
+import { existsSync, mkdirSync } from 'fs';
 
 import { logger } from '../utils/logger.js';
 
@@ -89,12 +90,21 @@ export async function executeTask(
   logger.info(`开始执行 Claude Agent - 工作目录: ${workingDir}, 新会话: ${newSession}`);
 
   try {
+    // 检查工作目录是否存在，不存在则创建
+    if (!existsSync(workingDir)) {
+      logger.info(`工作目录不存在，正在创建: ${workingDir}`);
+      mkdirSync(workingDir, { recursive: true });
+      logger.info(`工作目录创建成功: ${workingDir}`);
+    }
+
     const queryStream = query({
       prompt,
       options: {
         cwd: workingDir,
-        settingSources: ['project'], 
+        settingSources: ['project'],
         continue: !newSession,
+        permissionMode: 'bypassPermissions',
+        allowDangerouslySkipPermissions: true,
       },
     });
 

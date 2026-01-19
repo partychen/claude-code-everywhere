@@ -23,6 +23,44 @@ export class PreviewService {
   constructor(private previewRepo: PreviewRepository) {}
 
   /**
+   * 清理僵尸预览记录（进程已不存在但数据库中还有记录）
+   */
+  async cleanupOrphanedPreviews(): Promise<void> {
+    const previews = this.getStatus();
+    let cleaned = 0;
+
+    for (const preview of previews) {
+      const projectExists = this.isProcessAlive(preview.pid);
+      const tunnelExists = this.isProcessAlive(preview.tunnel_pid);
+
+      if (!projectExists || !tunnelExists) {
+        logger.info(
+          `[Preview ${preview.alias}] 检测到僵尸记录 (项目进程: ${projectExists ? '存在' : '不存在'}, Tunnel进程: ${tunnelExists ? '存在' : '不存在'})，正在清理...`
+        );
+        this.previewRepo.delete(preview.alias);
+        cleaned++;
+      }
+    }
+
+    if (cleaned > 0) {
+      logger.info(`已清理 ${cleaned} 个僵尸预览记录`);
+    }
+  }
+
+  /**
+   * 检查进程是否存在
+   */
+  private isProcessAlive(pid: number): boolean {
+    try {
+      // 发送信号 0 不会杀死进程，只是检查进程是否存在
+      process.kill(pid, 0);
+      return true;
+    } catch (e: any) {
+      return e.code !== 'ESRCH';
+    }
+  }
+
+  /**
    * 启动项目预览
    */
   async start(workingDir: WorkingDirectory): Promise<PreviewInfo> {
@@ -44,7 +82,24 @@ export class PreviewService {
     // 检查端口是否可用
     const portAvailable = await this.isPortAvailable(port);
     if (!portAvailable) {
-      throw new Error(`端口 ${port} 已被占用`);
+      // 检查端口是否被其他预览服务占用
+      const portOwner = this.findPreviewByPort(port);
+      if (portOwner) {
+        logger.info(
+          `[Preview ${alias}] 端口 ${port} 被预览服务 "${portOwner.alias}" 占用，正在重启...`
+        );
+        await this.stop(portOwner.alias);
+        // 等待端口释放
+        await this.waitForPortRelease(port, 5000);
+      } else {
+        throw new Error(
+          `端口 ${port} 已被占用\n\n` +
+            `解决方案：\n` +
+            `1. 停止占用端口 ${port} 的进程\n` +
+            `2. 修改预览端口: /d u ${alias} -po <新端口号>\n` +
+            `   例如: /d u ${alias} -po 3001`
+        );
+      }
     }
 
     // 启动项目进程
@@ -127,6 +182,15 @@ export class PreviewService {
   }
 
   /**
+   * 查找占用指定端口的预览服务
+   */
+  private findPreviewByPort(port: number): PreviewInfo | null {
+    const services = this.previewRepo.findAll();
+    const service = services.find((s) => s.port === port);
+    return service ? this.previewRepo.toPreviewInfo(service) : null;
+  }
+
+  /**
    * 检查端口是否可用
    */
   private isPortAvailable(port: number): Promise<boolean> {
@@ -138,6 +202,29 @@ export class PreviewService {
         resolve(true);
       });
       server.listen(port);
+    });
+  }
+
+  /**
+   * 等待端口释放
+   */
+  private waitForPortRelease(port: number, timeout: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const startTime = Date.now();
+      const checkInterval = 200; // 每200ms检查一次
+
+      const check = async () => {
+        const available = await this.isPortAvailable(port);
+        if (available) {
+          resolve();
+        } else if (Date.now() - startTime > timeout) {
+          reject(new Error(`等待端口 ${port} 释放超时`));
+        } else {
+          setTimeout(check, checkInterval);
+        }
+      };
+
+      check();
     });
   }
 
@@ -289,8 +376,13 @@ export class PreviewService {
     try {
       process.kill(pid, 'SIGTERM');
       logger.info(`[Preview ${alias}] 已停止 ${type} 进程 (PID: ${pid})`);
-    } catch (e) {
-      logger.warn(`[Preview ${alias}] 无法杀死 ${type} 进程 ${pid}:`, e);
+    } catch (e: any) {
+      // ESRCH 表示进程不存在，这是正常情况（可能已经被手动停止）
+      if (e.code === 'ESRCH') {
+        logger.debug(`[Preview ${alias}] ${type} 进程 ${pid} 已经不存在，跳过清理`);
+      } else {
+        logger.warn(`[Preview ${alias}] 无法杀死 ${type} 进程 ${pid}:`, e);
+      }
     }
   }
 }
