@@ -12,42 +12,25 @@ export interface AuthConfig {
 export function createAuthRouter(config: AuthConfig): Router {
   const router = Router();
 
-  // 登录接口
   router.post('/login', (req: Request, res: Response) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        error: '请提供用户名和密码',
-      });
+      return res.status(400).json({ success: false, error: '请提供用户名和密码' });
     }
 
-    // 验证用户名和密码
-    if (
-      username !== config.username ||
-      !verifyPassword(password, config.passwordHash)
-    ) {
-      return res.status(401).json({
-        success: false,
-        error: '用户名或密码错误',
-      });
+    if (username !== config.username || !verifyPassword(password, config.passwordHash)) {
+      return res.status(401).json({ success: false, error: '用户名或密码错误' });
     }
 
-    // 生成 JWT
     const token = generateToken(username, config.jwtSecret, config.jwtExpiresIn);
 
     res.json({
       success: true,
-      data: {
-        token,
-        username,
-        expiresIn: config.jwtExpiresIn,
-      },
+      data: { token, username, expiresIn: config.jwtExpiresIn },
     });
   });
 
-  // 验证 token 接口（可选，用于前端验证 token 是否有效）
   router.post('/verify', (req: Request, res: Response) => {
     const { token } = req.body;
 

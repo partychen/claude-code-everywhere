@@ -16,9 +16,6 @@ export interface AgentResult {
 
 export type ProgressCallback = (text: string, messageType: string) => Promise<void>;
 
-/**
- * 从 SDK 消息中提取文本内容
- */
 function extractText(message: unknown): string {
   if (!message || typeof message !== 'object') {
     return '';
@@ -26,7 +23,6 @@ function extractText(message: unknown): string {
 
   const msg = message as Record<string, unknown>;
 
-  // Assistant 响应消息
   if (msg.type === 'assistant' && msg.message) {
     const betaMessage = msg.message as Record<string, unknown>;
     const content = betaMessage.content;
@@ -38,12 +34,10 @@ function extractText(message: unknown): string {
     }
   }
 
-  // 工具执行结果
   if (msg.type === 'result' && msg.result) {
     logger.debug(`工具执行: ${msg.tool_name}`);
   }
 
-  // 状态消息
   if (msg.type === 'status' && Array.isArray(msg.output)) {
     return msg.output.join('\n');
   }
@@ -51,9 +45,6 @@ function extractText(message: unknown): string {
   return '';
 }
 
-/**
- * 处理进度回调
- */
 async function handleProgress(
   message: unknown,
   text: string,
@@ -67,10 +58,7 @@ async function handleProgress(
 
   if (msg.type === 'result' && msg.subtype === 'success') {
     const durationSec = Math.round((msg.duration_ms as number) / 1000);
-    await onProgress(
-      `任务完成 (耗时: ${durationSec}s, 轮次: ${msg.num_turns})`,
-      'result'
-    );
+    await onProgress(`任务完成 (耗时: ${durationSec}s, 轮次: ${msg.num_turns})`, 'result');
   }
 
   if (msg.type === 'system' && msg.subtype === 'status' && text) {
@@ -78,9 +66,12 @@ async function handleProgress(
   }
 }
 
-/**
- * 执行 Claude Agent 任务
- */
+const SYSTEM_PROMPT = `You are a helpful assistant. Follow these important guidelines:
+1. SECURITY: Never expose or leak sensitive information such as API keys, passwords, credentials, tokens, or any security-related data.
+2. CODE QUALITY: Ensure all code is correct and follows best practices.
+3. DEPENDENCIES: Install all necessary dependencies required for the service to run properly. Use appropriate package managers (npm, pip, etc.) to install required packages.
+4. NO SERVICE STARTUP: Do NOT attempt to start, run, or launch any services. Only prepare the environment and install dependencies, but do not execute startup commands.`;
+
 export async function executeTask(
   options: AgentOptions,
   onProgress?: ProgressCallback
@@ -90,11 +81,9 @@ export async function executeTask(
   logger.info(`开始执行 Claude Agent - 工作目录: ${workingDir}, 新会话: ${newSession}`);
 
   try {
-    // 检查工作目录是否存在，不存在则创建
     if (!existsSync(workingDir)) {
       logger.info(`工作目录不存在，正在创建: ${workingDir}`);
       mkdirSync(workingDir, { recursive: true });
-      logger.info(`工作目录创建成功: ${workingDir}`);
     }
 
     const queryStream = query({
@@ -105,7 +94,7 @@ export async function executeTask(
         continue: !newSession,
         permissionMode: 'bypassPermissions',
         allowDangerouslySkipPermissions: true,
-        systemPrompt: "You are a helpful assistant. Follow these important guidelines:\n\n1. SECURITY: Never expose or leak sensitive information such as API keys, passwords, credentials, tokens, or any security-related data.\n\n2. CODE QUALITY: Ensure all code is correct and follows best practices.\n\n3. DEPENDENCIES: Install all necessary dependencies required for the service to run properly. Use appropriate package managers (npm, pip, etc.) to install required packages.\n\n4. NO SERVICE STARTUP: Do NOT attempt to start, run, or launch any services. Only prepare the environment and install dependencies, but do not execute startup commands."
+        systemPrompt: SYSTEM_PROMPT,
       },
     });
 
@@ -116,7 +105,6 @@ export async function executeTask(
       if (text) {
         messages.push(text);
       }
-
       if (onProgress) {
         await handleProgress(message, text, onProgress);
       }

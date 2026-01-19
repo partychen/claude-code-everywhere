@@ -82,7 +82,7 @@
 **路径说明**：
 - 如果配置了 `ALLOWED_ROOT_DIR`：只能使用相对路径（如 `blog` 或 `sites/portfolio`）
 - 如果未配置 `ALLOWED_ROOT_DIR`：必须使用绝对路径（如 `/Users/xxx/project`）
-- 详见 [SECURITY.md](SECURITY.md)
+- 详见 [docs/SECURITY.md](SECURITY.md)
 
 #### 列出所有目录
 
@@ -342,7 +342,7 @@
 
 ### 前提条件
 
-需要安装 [cloudflared](https://github.com/cloudflare/cloudflared) 工具。详见 [PREVIEW_SETUP.md](PREVIEW_SETUP.md)。
+需要安装 [cloudflared](https://github.com/cloudflare/cloudflared) 工具。详见 [docs/PREVIEW_SETUP.md](PREVIEW_SETUP.md)。
 
 ### 适用场景
 
@@ -574,6 +574,6 @@ A: 支持。但每个机器人需要独立的服务实例和配置。建议使�
 ## 相关文档
 
 - [README.md](../README.md) - 项目介绍和快速开始
-- [SECURITY.md](SECURITY.md) - 安全配置指南
-- [PREVIEW_SETUP.md](PREVIEW_SETUP.md) - Cloudflare Tunnel 配置指南
+- [docs/SECURITY.md](SECURITY.md) - 安全配置指南
+- [docs/PREVIEW_SETUP.md](PREVIEW_SETUP.md) - Cloudflare Tunnel 配置指南
 - [CLAUDE.md](../CLAUDE.md) - Claude Code 项目指南

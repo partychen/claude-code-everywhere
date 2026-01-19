@@ -31,7 +31,7 @@ export class PreviewService {
 
     for (const preview of previews) {
       const projectExists = this.isProcessAlive(preview.pid);
-      const tunnelExists = this.isProcessAlive(preview.tunnel_pid);
+      const tunnelExists = this.isProcessAlive(preview.tunnelPid);
 
       if (!projectExists || !tunnelExists) {
         logger.info(

@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../../utils/jwt.js';
 
-/**
- * JWT 认证中间件
- */
 export function jwtAuthMiddleware(jwtSecret: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -16,7 +13,7 @@ export function jwtAuthMiddleware(jwtSecret: string) {
       });
     }
 
-    const token = authHeader.substring(7); // 移除 'Bearer '
+    const token = authHeader.substring(7);
     const payload = verifyToken(token, jwtSecret);
 
     if (!payload) {
@@ -27,8 +24,7 @@ export function jwtAuthMiddleware(jwtSecret: string) {
       });
     }
 
-    // 将用户信息附加到请求对象
-    (req as any).user = payload;
+    (req as Request & { user: typeof payload }).user = payload;
     next();
   };
 }

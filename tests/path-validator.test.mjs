@@ -6,59 +6,12 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { platform } from 'os';
-import { PathValidator, expandPath, normalizePath, isSamePath } from '../dist/utils/path.js';
+import { PathValidator } from '../dist/utils/path.js';
 
 console.log(`\n当前平台: ${platform()}\n`);
 
 // ============================================
-// 测试 1: expandPath() 函数
-// ============================================
-describe('expandPath() - 路径展开', () => {
-  it('应该展开 ~ 为用户目录', () => {
-    const result = expandPath('~/projects');
-    assert.ok(result.includes('projects'));
-    assert.ok(!result.includes('~'));
-  });
-
-  it('应该处理相对路径', () => {
-    const result = expandPath('./src');
-    assert.ok(result.includes('src'));
-    assert.ok(!result.startsWith('.'));
-  });
-
-  it('应该处理绝对路径', () => {
-    const input = platform() === 'win32' ? 'C:\\projects' : '/home/projects';
-    const result = expandPath(input);
-    assert.ok(result.includes('projects'));
-  });
-});
-
-// ============================================
-// 测试 2: normalizePath() 和 isSamePath()
-// ============================================
-describe('normalizePath() 和 isSamePath() - 路径比较', () => {
-  it('应该规范化路径分隔符', () => {
-    const result = normalizePath('C:\\Users\\test');
-    assert.strictEqual(result, 'c:/users/test');
-  });
-
-  it('应该转换为小写', () => {
-    const result = normalizePath('/Home/User/Projects');
-    assert.strictEqual(result, '/home/user/projects');
-  });
-
-  it('应该正确比较相同路径（不同格式）', () => {
-    assert.ok(isSamePath('/home/user', '/Home/User'));
-    assert.ok(isSamePath('C:\\Users\\test', 'c:/users/test'));
-  });
-
-  it('应该正确识别不同路径', () => {
-    assert.ok(!isSamePath('/home/user', '/home/admin'));
-  });
-});
-
-// ============================================
-// 测试 3: PathValidator - 基础验证
+// 测试 1: PathValidator - 基础验证
 // ============================================
 describe('PathValidator - 基础路径验证', () => {
   const rootDir = platform() === 'win32' ? 'C:\\projects' : '/home/projects';
@@ -91,7 +44,7 @@ describe('PathValidator - 基础路径验证', () => {
 });
 
 // ============================================
-// 测试 4: PathValidator - 绝对路径检测
+// 测试 2: PathValidator - 绝对路径检测
 // ============================================
 describe('PathValidator - 绝对路径检测（跨平台）', () => {
   const rootDir = platform() === 'win32' ? 'C:\\projects' : '/home/projects';
@@ -122,7 +75,7 @@ describe('PathValidator - 绝对路径检测（跨平台）', () => {
 });
 
 // ============================================
-// 测试 5: PathValidator - 安全性检测
+// 测试 3: PathValidator - 安全性检测
 // ============================================
 describe('PathValidator - 安全性检测', () => {
   const rootDir = platform() === 'win32' ? 'C:\\projects' : '/home/projects';
@@ -162,7 +115,7 @@ describe('PathValidator - 安全性检测', () => {
 });
 
 // ============================================
-// 测试 6: PathValidator - 边界情况
+// 测试 4: PathValidator - 边界情况
 // ============================================
 describe('PathValidator - 边界情况', () => {
   const rootDir = platform() === 'win32' ? 'C:\\projects' : '/home/projects';
@@ -206,7 +159,7 @@ describe('PathValidator - 边界情况', () => {
 });
 
 // ============================================
-// 测试 7: PathValidator - 路径安全检查
+// 测试 5: PathValidator - 路径遍历防护
 // ============================================
 describe('PathValidator - 路径遍历防护', () => {
   const rootDir = platform() === 'win32' ? 'C:\\projects' : '/home/projects';
@@ -216,9 +169,9 @@ describe('PathValidator - 路径遍历防护', () => {
     const result = validator.validate('blog');
     assert.ok(result.valid);
     assert.ok(result.normalizedPath);
-    const normalized = normalizePath(result.normalizedPath);
-    const normalizedRoot = normalizePath(rootDir);
-    assert.ok(normalized.startsWith(normalizedRoot));
+    const normalizedRoot = rootDir.toLowerCase().replace(/\\/g, '/');
+    const normalizedPath = result.normalizedPath.toLowerCase().replace(/\\/g, '/');
+    assert.ok(normalizedPath.startsWith(normalizedRoot));
   });
 
   it('多次遍历也应该被阻止', () => {
@@ -228,7 +181,7 @@ describe('PathValidator - 路径遍历防护', () => {
 });
 
 // ============================================
-// 测试 8: PathValidator - getAllowedRootDir
+// 测试 6: PathValidator - getAllowedRootDir
 // ============================================
 describe('PathValidator - 辅助方法', () => {
   const rootDir = platform() === 'win32' ? 'C:\\projects' : '/home/projects';

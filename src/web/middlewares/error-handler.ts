@@ -3,12 +3,14 @@ import { logger } from '../../utils/logger.js';
 
 export function errorHandler(
   err: Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
-) {
+  _next: NextFunction
+): void {
   logger.error('API Error:', err.message);
-  logger.error(err.stack);
+  if (err.stack) {
+    logger.error(err.stack);
+  }
 
   res.status(500).json({
     success: false,
