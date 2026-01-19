@@ -122,7 +122,12 @@ class DirectoryList {
           </div>
         </div>
         <button class="card-toggle-btn toggle-btn-collapsed with-transition" data-alias="${alias}">
-          <span class="toggle-arrow">&lt;</span>
+          <svg class="toggle-arrow toggle-arrow-collapsed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+          <svg class="toggle-arrow toggle-arrow-expanded" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"></path>
+          </svg>
         </button>
       </div>
     `;
@@ -277,18 +282,15 @@ class DirectoryList {
    * Sets expanded/collapsed state for card
    * @param {HTMLElement} wrapper - Card wrapper element
    * @param {HTMLElement} toggleBtn - Toggle button element
-   * @param {HTMLElement} arrow - Arrow span element
    * @param {boolean} expanded - Whether card should be expanded
    */
-  setCardExpanded(wrapper, toggleBtn, arrow, expanded) {
+  setCardExpanded(wrapper, toggleBtn, expanded) {
     if (expanded) {
       wrapper.classList.replace('card-collapsed', 'card-expanded');
       toggleBtn.classList.replace('toggle-btn-collapsed', 'toggle-btn-expanded');
-      arrow.textContent = '>';
     } else {
       wrapper.classList.replace('card-expanded', 'card-collapsed');
       toggleBtn.classList.replace('toggle-btn-expanded', 'toggle-btn-collapsed');
-      arrow.textContent = '<';
     }
   }
 
@@ -333,27 +335,20 @@ class DirectoryList {
     const container = document.querySelector(`[data-alias="${this.currentOpenAlias}"]`);
     if (!container) return;
 
-    const { wrapper, actions, toggleBtn, arrow } = this.getCardElements(container);
-
-    this.setTransitionEnabled(wrapper, toggleBtn, true);
-    this.clearInlineTransform(wrapper, toggleBtn);
-    this.setCardExpanded(wrapper, toggleBtn, arrow, false);
-    actions.classList.remove('visible');
-    this.currentOpenAlias = null;
-    this.toggleFabButton(true);
+    const { wrapper, actions, toggleBtn } = this.getCardElements(container);
+    this.collapseCard(wrapper, toggleBtn, actions);
   }
 
   /**
    * Gets all relevant elements from a card container
    * @param {HTMLElement} container - Card container element
-   * @returns {Object} Object containing wrapper, actions, toggleBtn, arrow elements
+   * @returns {Object} Object containing wrapper, actions, toggleBtn elements
    */
   getCardElements(container) {
     const wrapper = container.querySelector('.card-swipe-wrapper');
     const actions = container.querySelector('.card-swipe-actions');
     const toggleBtn = container.querySelector('.card-toggle-btn');
-    const arrow = toggleBtn.querySelector('.toggle-arrow');
-    return { wrapper, actions, toggleBtn, arrow };
+    return { wrapper, actions, toggleBtn };
   }
 
   // ============================================
@@ -401,11 +396,10 @@ class DirectoryList {
    * @param {number} params.clientX - Current X position
    * @param {HTMLElement} params.wrapper - Card wrapper
    * @param {HTMLElement} params.toggleBtn - Toggle button
-   * @param {HTMLElement} params.arrow - Arrow element
    * @param {HTMLElement} params.actions - Actions container
    * @param {boolean} params.isTouch - Whether this is a touch event
    */
-  handleDragMove({ state, clientX, wrapper, toggleBtn, arrow, actions, isTouch }) {
+  handleDragMove({ state, clientX, wrapper, toggleBtn, actions, isTouch }) {
     if (!state.isDragging) return;
 
     state.currentX = clientX;
@@ -422,7 +416,13 @@ class DirectoryList {
     const arrowThreshold = isTouch
       ? CONFIG.DRAG_ARROW_THRESHOLD_TOUCH
       : CONFIG.DRAG_ARROW_THRESHOLD_MOUSE;
-    arrow.textContent = diff > arrowThreshold ? '>' : '<';
+
+    // 根据拖动距离切换箭头状态
+    if (diff > arrowThreshold) {
+      toggleBtn.classList.replace('toggle-btn-collapsed', 'toggle-btn-expanded');
+    } else {
+      toggleBtn.classList.replace('toggle-btn-expanded', 'toggle-btn-collapsed');
+    }
 
     const actionsThreshold = isTouch
       ? CONFIG.DRAG_ACTIONS_VISIBLE_THRESHOLD_TOUCH
@@ -438,12 +438,11 @@ class DirectoryList {
    * @param {Object} params.state - Drag state
    * @param {HTMLElement} params.wrapper - Card wrapper
    * @param {HTMLElement} params.toggleBtn - Toggle button
-   * @param {HTMLElement} params.arrow - Arrow element
    * @param {HTMLElement} params.actions - Actions container
    * @param {string} params.alias - Directory alias
    * @param {boolean} params.isTouch - Whether this is a touch event
    */
-  handleDragEnd({ state, wrapper, toggleBtn, arrow, actions, alias, isTouch }) {
+  handleDragEnd({ state, wrapper, toggleBtn, actions, alias, isTouch }) {
     if (!state.isDragging) return;
     state.isDragging = false;
 
@@ -456,16 +455,9 @@ class DirectoryList {
     this.clearInlineTransform(wrapper, toggleBtn);
 
     if (diff > expandThreshold) {
-      this.closeOpenCard();
-      this.setCardExpanded(wrapper, toggleBtn, arrow, true);
-      this.currentOpenAlias = alias;
-      actions.classList.add('visible');
-      this.toggleFabButton(false);
+      this.expandCard(wrapper, toggleBtn, actions, alias);
     } else {
-      this.setCardExpanded(wrapper, toggleBtn, arrow, false);
-      actions.classList.remove('visible');
-      this.currentOpenAlias = null;
-      this.toggleFabButton(true);
+      this.collapseCard(wrapper, toggleBtn, actions);
     }
   }
 
@@ -476,21 +468,21 @@ class DirectoryList {
     const containers = document.querySelectorAll('.card-swipe-container');
 
     containers.forEach((container) => {
-      const { wrapper, actions, toggleBtn, arrow } = this.getCardElements(container);
+      const { wrapper, actions, toggleBtn } = this.getCardElements(container);
       const alias = container.dataset.alias;
       const state = this.createDragState();
 
-      this.initTouchHandlers(wrapper, toggleBtn, arrow, actions, alias, state);
-      this.initMouseHandlers(wrapper, toggleBtn, arrow, actions, alias, state);
-      this.initActionButtons(actions, wrapper, toggleBtn, arrow, alias);
-      this.initCardClickHandler(wrapper, toggleBtn, arrow, actions, alias, state);
+      this.initTouchHandlers(wrapper, toggleBtn, actions, alias, state);
+      this.initMouseHandlers(wrapper, toggleBtn, actions, alias, state);
+      this.initActionButtons(actions, wrapper, toggleBtn, alias);
+      this.initCardClickHandler(wrapper, toggleBtn, actions, alias, state);
     });
   }
 
   /**
    * Initializes touch event handlers for a card
    */
-  initTouchHandlers(wrapper, toggleBtn, arrow, actions, alias, state) {
+  initTouchHandlers(wrapper, toggleBtn, actions, alias, state) {
     wrapper.addEventListener('touchstart', (e) => {
       state.startX = e.touches[0].clientX;
       state.isDragging = true;
@@ -504,7 +496,6 @@ class DirectoryList {
         clientX: e.touches[0].clientX,
         wrapper,
         toggleBtn,
-        arrow,
         actions,
         isTouch: true,
       });
@@ -515,7 +506,6 @@ class DirectoryList {
         state,
         wrapper,
         toggleBtn,
-        arrow,
         actions,
         alias,
         isTouch: true,
@@ -526,7 +516,7 @@ class DirectoryList {
   /**
    * Initializes mouse event handlers for a card
    */
-  initMouseHandlers(wrapper, toggleBtn, arrow, actions, alias, state) {
+  initMouseHandlers(wrapper, toggleBtn, actions, alias, state) {
     wrapper.addEventListener('mousedown', (e) => {
       if (e.target.closest('button')) return;
       state.startX = e.clientX;
@@ -542,7 +532,6 @@ class DirectoryList {
         clientX: e.clientX,
         wrapper,
         toggleBtn,
-        arrow,
         actions,
         isTouch: false,
       });
@@ -553,7 +542,6 @@ class DirectoryList {
         state,
         wrapper,
         toggleBtn,
-        arrow,
         actions,
         alias,
         isTouch: false,
@@ -567,7 +555,7 @@ class DirectoryList {
   /**
    * Initializes action button event handlers
    */
-  initActionButtons(actions, wrapper, toggleBtn, arrow, alias) {
+  initActionButtons(actions, wrapper, toggleBtn, alias) {
     const handleAction = async (btn, e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -576,10 +564,7 @@ class DirectoryList {
       await this.executeAction(action, alias);
 
       this.clearInlineTransform(wrapper, toggleBtn);
-      this.setCardExpanded(wrapper, toggleBtn, arrow, false);
-      actions.classList.remove('visible');
-      this.currentOpenAlias = null;
-      this.toggleFabButton(true);
+      this.collapseCard(wrapper, toggleBtn, actions);
     };
 
     actions.querySelectorAll('.swipe-action-btn').forEach((btn) => {
@@ -613,7 +598,7 @@ class DirectoryList {
   /**
    * Initializes click handler for collapsing card
    */
-  initCardClickHandler(wrapper, toggleBtn, arrow, actions, alias, state) {
+  initCardClickHandler(wrapper, toggleBtn, actions, alias, state) {
     wrapper.addEventListener('click', (e) => {
       if (state.hasDragged) {
         state.hasDragged = false;
@@ -626,10 +611,7 @@ class DirectoryList {
 
       if (this.currentOpenAlias === alias) {
         this.clearInlineTransform(wrapper, toggleBtn);
-        this.setCardExpanded(wrapper, toggleBtn, arrow, false);
-        actions.classList.remove('visible');
-        this.currentOpenAlias = null;
-        this.toggleFabButton(true);
+        this.collapseCard(wrapper, toggleBtn, actions);
       }
     });
   }
@@ -647,12 +629,12 @@ class DirectoryList {
 
         const alias = btn.dataset.alias;
         const container = btn.closest('.card-swipe-container');
-        const { wrapper, actions, arrow } = this.getCardElements(container);
+        const { wrapper, actions, toggleBtn } = this.getCardElements(container);
 
         if (this.currentOpenAlias === alias) {
-          this.collapseCard(wrapper, btn, arrow, actions);
+          this.collapseCard(wrapper, toggleBtn, actions);
         } else {
-          this.expandCard(wrapper, btn, arrow, actions, alias);
+          this.expandCard(wrapper, toggleBtn, actions, alias);
         }
       });
     });
@@ -668,10 +650,10 @@ class DirectoryList {
   /**
    * Collapses a card
    */
-  collapseCard(wrapper, toggleBtn, arrow, actions) {
+  collapseCard(wrapper, toggleBtn, actions) {
     this.setTransitionEnabled(wrapper, toggleBtn, true);
     this.clearInlineTransform(wrapper, toggleBtn);
-    this.setCardExpanded(wrapper, toggleBtn, arrow, false);
+    this.setCardExpanded(wrapper, toggleBtn, false);
     actions.classList.remove('visible');
     this.currentOpenAlias = null;
     this.toggleFabButton(true);
@@ -680,11 +662,11 @@ class DirectoryList {
   /**
    * Expands a card
    */
-  expandCard(wrapper, toggleBtn, arrow, actions, alias) {
+  expandCard(wrapper, toggleBtn, actions, alias) {
     this.closeOpenCard();
     this.setTransitionEnabled(wrapper, toggleBtn, true);
     this.clearInlineTransform(wrapper, toggleBtn);
-    this.setCardExpanded(wrapper, toggleBtn, arrow, true);
+    this.setCardExpanded(wrapper, toggleBtn, true);
     actions.classList.add('visible');
     this.currentOpenAlias = alias;
     this.toggleFabButton(false);

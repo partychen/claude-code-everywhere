@@ -827,6 +827,31 @@ code {
 .toggle-arrow {
   display: block;
   user-select: none;
+  width: 18px;
+  height: 18px;
+  transition: opacity 0.2s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 默认显示收起箭头,隐藏展开箭头 */
+.toggle-arrow-collapsed {
+  opacity: 1;
+}
+
+.toggle-arrow-expanded {
+  opacity: 0;
+}
+
+/* 展开状态:显示展开箭头,隐藏收起箭头 */
+.toggle-btn-expanded .toggle-arrow-collapsed {
+  opacity: 0;
+}
+
+.toggle-btn-expanded .toggle-arrow-expanded {
+  opacity: 1;
 }
 
 /* Card wrapper transition states */
