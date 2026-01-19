@@ -15,7 +15,8 @@
       "Bash(cmd /c \"taskkill /F /T /PID 27792\")",
       "Bash(powershell -Command \"Stop-Process -Id 22036 -Force\")",
       "Bash(powershell -Command \"Stop-Process -Id 27792 -Force\")",
-      "Bash(powershell -Command \"$proc = Get-Process -Id 27792; Stop-Process -Id $proc.Id -Force; Get-CimInstance Win32_Process | Where-Object { $_ParentProcessId -eq 27792 } | ForEach-Object { Stop-Process -Id $_ProcessId -Force }\")"
+      "Bash(powershell -Command \"$proc = Get-Process -Id 27792; Stop-Process -Id $proc.Id -Force; Get-CimInstance Win32_Process | Where-Object { $_ParentProcessId -eq 27792 } | ForEach-Object { Stop-Process -Id $_ProcessId -Force }\")",
+      "Bash(npx tsc:*)"
     ]
   }
 }

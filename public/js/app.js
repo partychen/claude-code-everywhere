@@ -1,85 +1,199 @@
-// 全局组件实例
-let directoryList;
-let previewList;
-let systemInfo;
+/**
+ * Configuration constants for the main application
+ */
+const APP_CONFIG = {
+  /** Tab names for navigation */
+  TABS: {
+    DIRS: 'dirs',
+    PREVIEWS: 'previews',
+    SYSTEM: 'system',
+  },
+  /** Animation timing in milliseconds */
+  ANIMATION: {
+    TOUCH_FEEDBACK_DELAY_MS: 150,
+  },
+  /** DOM element IDs */
+  ELEMENTS: {
+    FAB_ADD: 'fab-add',
+    FAB_MENU_PREVIEW: 'fab-menu-preview',
+    FAB_MENU_TOGGLE: 'fab-menu-toggle',
+    FAB_BACKDROP: 'fab-backdrop',
+    TAB_INDICATOR: 'tab-indicator',
+  },
+};
 
-// Tab 切换
+/**
+ * Global component instances
+ * @type {DirectoryList|null}
+ */
+let directoryList = null;
+
+/**
+ * @type {PreviewList|null}
+ */
+let previewList = null;
+
+/**
+ * @type {SystemInfo|null}
+ */
+let systemInfo = null;
+
+// ============================================
+// Tab Navigation
+// ============================================
+
+/**
+ * Switches to a specified tab
+ * @param {string} tabName - Name of the tab to switch to
+ */
 function switchTab(tabName) {
-  // 隐藏所有内容
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  // 移除所有激活状态
-  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  hideAllTabContents();
+  deactivateAllTabButtons();
+  showTabContent(tabName);
+  activateTabButton(tabName);
+  updateFabVisibility(tabName);
+}
 
-  // 显示目标内容
-  document.getElementById(`page-${tabName}`).classList.remove('hidden');
-  // 激活目标按钮
-  const activeBtn = document.getElementById(`tab-${tabName}`);
-  activeBtn.classList.add('active');
+/**
+ * Hides all tab content panels
+ */
+function hideAllTabContents() {
+  document.querySelectorAll('.tab-content').forEach((el) => {
+    el.classList.add('hidden');
+  });
+}
 
-  // 更新滑动指示器位置
-  updateTabIndicator(activeBtn);
+/**
+ * Deactivates all tab buttons
+ */
+function deactivateAllTabButtons() {
+  document.querySelectorAll('.tab-btn').forEach((el) => {
+    el.classList.remove('active');
+  });
+}
 
-  // 控制浮动按钮显示
-  const fabAdd = document.getElementById('fab-add');
-  const fabMenuPreview = document.getElementById('fab-menu-preview');
-
-  if (tabName === 'dirs') {
-    fabAdd.classList.add('show');
-    fabMenuPreview.classList.remove('show');
-  } else if (tabName === 'previews') {
-    fabAdd.classList.remove('show');
-    fabMenuPreview.classList.add('show');
-  } else {
-    fabAdd.classList.remove('show');
-    fabMenuPreview.classList.remove('show');
+/**
+ * Shows the content panel for a specific tab
+ * @param {string} tabName - Tab name
+ */
+function showTabContent(tabName) {
+  const content = document.getElementById(`page-${tabName}`);
+  if (content) {
+    content.classList.remove('hidden');
   }
 }
 
-// 更新滑动指示器位置
+/**
+ * Activates the button for a specific tab and updates indicator
+ * @param {string} tabName - Tab name
+ */
+function activateTabButton(tabName) {
+  const activeBtn = document.getElementById(`tab-${tabName}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+    updateTabIndicator(activeBtn);
+  }
+}
+
+/**
+ * Updates the floating action button visibility based on current tab
+ * @param {string} tabName - Current tab name
+ */
+function updateFabVisibility(tabName) {
+  const fabAdd = document.getElementById(APP_CONFIG.ELEMENTS.FAB_ADD);
+  const fabMenuPreview = document.getElementById(APP_CONFIG.ELEMENTS.FAB_MENU_PREVIEW);
+
+  switch (tabName) {
+    case APP_CONFIG.TABS.DIRS:
+      fabAdd.classList.add('show');
+      fabMenuPreview.classList.remove('show');
+      break;
+    case APP_CONFIG.TABS.PREVIEWS:
+      fabAdd.classList.remove('show');
+      fabMenuPreview.classList.add('show');
+      break;
+    default:
+      fabAdd.classList.remove('show');
+      fabMenuPreview.classList.remove('show');
+  }
+}
+
+/**
+ * Updates the sliding indicator position under the active tab
+ * @param {HTMLElement} activeBtn - The active tab button element
+ */
 function updateTabIndicator(activeBtn) {
-  const indicator = document.getElementById('tab-indicator');
+  const indicator = document.getElementById(APP_CONFIG.ELEMENTS.TAB_INDICATOR);
   const tabNav = document.querySelector('.tab-nav');
 
-  // 获取按钮相对于父容器的位置
+  if (!indicator || !tabNav) return;
+
   const btnRect = activeBtn.getBoundingClientRect();
   const navRect = tabNav.getBoundingClientRect();
 
-  // 计算相对位置（考虑 padding）
   const left = btnRect.left - navRect.left;
   const width = btnRect.width;
 
-  // 应用动画
   indicator.style.width = `${width}px`;
   indicator.style.transform = `translateX(${left}px)`;
 }
 
-// 初始化
-document.addEventListener('DOMContentLoaded', () => {
-  // 创建组件实例
-  directoryList = new DirectoryList(api);
-  previewList = new PreviewList(api);
-  systemInfo = new SystemInfo(api);
+// ============================================
+// FAB Menu Management
+// ============================================
 
-  // 绑定 Tab 事件
+/**
+ * Opens the FAB menu
+ */
+function openFabMenu() {
+  const fabMenuPreview = document.getElementById(APP_CONFIG.ELEMENTS.FAB_MENU_PREVIEW);
+  const fabBackdrop = document.getElementById(APP_CONFIG.ELEMENTS.FAB_BACKDROP);
+
+  fabMenuPreview.classList.add('expanded');
+  fabBackdrop.classList.add('show');
+}
+
+/**
+ * Closes the FAB menu
+ */
+function closeFabMenu() {
+  const fabMenuPreview = document.getElementById(APP_CONFIG.ELEMENTS.FAB_MENU_PREVIEW);
+  const fabBackdrop = document.getElementById(APP_CONFIG.ELEMENTS.FAB_BACKDROP);
+
+  fabMenuPreview.classList.remove('expanded');
+  fabBackdrop.classList.remove('show');
+}
+
+// ============================================
+// Event Binding
+// ============================================
+
+/**
+ * Binds tab button click events
+ */
+function bindTabEvents() {
   document.getElementById('tab-dirs').onclick = () => {
-    switchTab('dirs');
+    switchTab(APP_CONFIG.TABS.DIRS);
     directoryList.render();
   };
 
   document.getElementById('tab-previews').onclick = () => {
-    switchTab('previews');
+    switchTab(APP_CONFIG.TABS.PREVIEWS);
     previewList.render();
   };
 
   document.getElementById('tab-system').onclick = () => {
-    switchTab('system');
+    switchTab(APP_CONFIG.TABS.SYSTEM);
     systemInfo.render();
   };
+}
 
-  // 绑定浮动按钮事件
-  const fabAdd = document.getElementById('fab-add');
+/**
+ * Binds FAB add button events with touch feedback
+ */
+function bindFabAddEvents() {
+  const fabAdd = document.getElementById(APP_CONFIG.ELEMENTS.FAB_ADD);
 
-  // 添加触摸反馈
   fabAdd.addEventListener('touchstart', () => {
     fabAdd.style.transform = 'scale(0.95) rotate(90deg)';
   });
@@ -87,19 +201,22 @@ document.addEventListener('DOMContentLoaded', () => {
   fabAdd.addEventListener('touchend', () => {
     setTimeout(() => {
       fabAdd.style.transform = '';
-    }, 150);
+    }, APP_CONFIG.ANIMATION.TOUCH_FEEDBACK_DELAY_MS);
   });
 
   fabAdd.onclick = () => {
     directoryList.showAddModal();
   };
+}
 
-  // FAB Menu 交互
-  const fabMenuPreview = document.getElementById('fab-menu-preview');
-  const fabMenuToggle = document.getElementById('fab-menu-toggle');
-  const fabBackdrop = document.getElementById('fab-backdrop');
+/**
+ * Binds FAB menu events
+ */
+function bindFabMenuEvents() {
+  const fabMenuToggle = document.getElementById(APP_CONFIG.ELEMENTS.FAB_MENU_TOGGLE);
+  const fabBackdrop = document.getElementById(APP_CONFIG.ELEMENTS.FAB_BACKDROP);
+  const fabMenuPreview = document.getElementById(APP_CONFIG.ELEMENTS.FAB_MENU_PREVIEW);
 
-  // 切换菜单展开/收起
   fabMenuToggle.onclick = () => {
     const isExpanded = fabMenuPreview.classList.contains('expanded');
     if (isExpanded) {
@@ -109,49 +226,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 点击背景关闭菜单
   fabBackdrop.onclick = () => {
     closeFabMenu();
   };
 
-  // 绑定菜单操作
-  document.querySelectorAll('.fab-action').forEach(btn => {
+  bindFabActionButtons();
+}
+
+/**
+ * Binds FAB action button events
+ */
+function bindFabActionButtons() {
+  document.querySelectorAll('.fab-action').forEach((btn) => {
     btn.onclick = () => {
       const action = btn.getAttribute('data-action');
-      if (action === 'refresh') {
-        previewList.render();
-      } else if (action === 'stop-all') {
-        previewList.stopAll();
-      }
+      executeFabAction(action);
       closeFabMenu();
     };
   });
+}
 
-  function openFabMenu() {
-    fabMenuPreview.classList.add('expanded');
-    fabBackdrop.classList.add('show');
+/**
+ * Executes a FAB action
+ * @param {string} action - Action name
+ */
+function executeFabAction(action) {
+  switch (action) {
+    case 'refresh':
+      previewList.render();
+      break;
+    case 'stop-all':
+      previewList.stopAll();
+      break;
   }
+}
 
-  function closeFabMenu() {
-    fabMenuPreview.classList.remove('expanded');
-    fabBackdrop.classList.remove('show');
-  }
-
-  // 默认加载工作目录页并显示浮动按钮
-  directoryList.render();
-  document.getElementById('fab-add').classList.add('show');
-
-  // 初始化滑动指示器位置
-  const firstActiveBtn = document.querySelector('.tab-btn.active');
-  if (firstActiveBtn) {
-    updateTabIndicator(firstActiveBtn);
-  }
-
-  // 监听窗口大小变化，更新指示器位置
+/**
+ * Binds window resize event for indicator update
+ */
+function bindResizeEvent() {
   window.addEventListener('resize', () => {
     const currentActiveBtn = document.querySelector('.tab-btn.active');
     if (currentActiveBtn) {
       updateTabIndicator(currentActiveBtn);
     }
   });
-});
+}
+
+// ============================================
+// Initialization
+// ============================================
+
+/**
+ * Initializes the application
+ */
+function initializeApp() {
+  initializeComponents();
+  bindTabEvents();
+  bindFabAddEvents();
+  bindFabMenuEvents();
+  bindResizeEvent();
+  renderInitialView();
+}
+
+/**
+ * Creates component instances
+ */
+function initializeComponents() {
+  directoryList = new DirectoryList(api);
+  previewList = new PreviewList(api);
+  systemInfo = new SystemInfo(api);
+}
+
+/**
+ * Renders the initial view and sets up indicator
+ */
+function renderInitialView() {
+  directoryList.render();
+  document.getElementById(APP_CONFIG.ELEMENTS.FAB_ADD).classList.add('show');
+
+  const firstActiveBtn = document.querySelector('.tab-btn.active');
+  if (firstActiveBtn) {
+    updateTabIndicator(firstActiveBtn);
+  }
+}
+
+// Start the application when DOM is ready
+document.addEventListener('DOMContentLoaded', initializeApp);

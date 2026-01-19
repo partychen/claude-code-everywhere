@@ -119,6 +119,7 @@ body {
   border-radius: 1rem;
   padding: 1.5rem;
   margin-bottom: 1rem;
+  min-height: 200px;
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
   transition: all 0.3s ease;
   animation: fadeIn 0.5s ease-out;
@@ -166,6 +167,21 @@ body {
 .badge-blue {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+  color: white;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .badge-purple {
@@ -672,6 +688,18 @@ code {
   text-align: center;
 }
 
+.swipe-action-preview.preview-start {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+}
+
+.swipe-action-preview.preview-stop {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
 .swipe-action-edit {
   background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
   color: white;
@@ -759,4 +787,676 @@ code {
 .confirm-btn-confirm:hover {
   box-shadow: 0 5px 20px rgba(245, 87, 108, 0.6);
   transform: translateY(-2px);
+}
+
+/* Card Swipe Animation Classes */
+
+/* Toggle button base styling (moved from DirectoryList.js) */
+.card-toggle-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: -2px 0 8px rgba(102, 126, 234, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, box-shadow 0.2s;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.card-toggle-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: -2px 0 12px rgba(102, 126, 234, 0.5);
+}
+
+.card-toggle-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.toggle-arrow {
+  display: block;
+  user-select: none;
+}
+
+/* Card wrapper transition states */
+.card-swipe-wrapper.with-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-swipe-wrapper.no-transition {
+  transition: none;
+}
+
+/* Toggle button transition states */
+.card-toggle-btn.with-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s, box-shadow 0.2s;
+}
+
+.card-toggle-btn.no-transition {
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+/* Card expanded state */
+.card-swipe-wrapper.card-expanded {
+  transform: translateX(-90px);
+}
+
+.card-swipe-wrapper.card-collapsed {
+  transform: translateX(0);
+}
+
+/* Toggle button expanded/collapsed states */
+.card-toggle-btn.toggle-btn-expanded {
+  transform: translateY(-50%) translateX(-90px);
+}
+
+.card-toggle-btn.toggle-btn-collapsed {
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Override active state for expanded toggle button */
+.card-toggle-btn.toggle-btn-expanded:active {
+  transform: translateY(-50%) translateX(-90px) scale(0.95);
+}
+
+/* Toast animations (moved from DirectoryList.js) */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Toast styles */
+.toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+  font-weight: 600;
+  max-width: 320px;
+}
+
+.toast.toast-out {
+  animation: slideOutRight 0.3s ease-out;
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.toast-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ============================================
+   Directory Card Styles (DirectoryList)
+   ============================================ */
+
+/* Card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2d3748;
+}
+
+/* Card path display */
+.card-path {
+  color: #4a5568;
+  margin: 0.5rem 0;
+  font-family: 'Monaco', monospace;
+  font-size: 0.9rem;
+  overflow-wrap: break-word;
+}
+
+/* Card description */
+.card-description {
+  color: #718096;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+/* Preview config section */
+.preview-config {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 0.5rem;
+  border-left: 3px solid #667eea;
+}
+
+.preview-config-item {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #4a5568;
+}
+
+.preview-config-item + .preview-config-item {
+  margin-top: 0.5rem;
+}
+
+.preview-config-code {
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+}
+
+/* Set default button */
+.btn-set-default {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  white-space: nowrap;
+  float: right;
+  margin-left: 0.75rem;
+}
+
+/* Empty state */
+.empty-state-icon {
+  font-size: 4rem;
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.empty-state-text {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Error card */
+.card-error {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.card-error-title {
+  margin: 0 0 0.5rem 0;
+}
+
+.card-error-message {
+  margin: 0;
+}
+
+/* Clear float utility */
+.clearfix {
+  clear: both;
+}
+
+/* Modal styles */
+.modal-title {
+  margin: 0 0 1.5rem 0;
+  color: #2d3748;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group-last {
+  margin-bottom: 1.5rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.input-readonly {
+  background: #f7fafc;
+  cursor: not-allowed;
+}
+
+.preview-section {
+  padding: 1rem;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 0.75rem;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.checkbox-label {
+  margin: 0;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+/* ============================================
+   Preview Card Styles (PreviewList)
+   ============================================ */
+
+/* Preview card base */
+.preview-card {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.95), rgba(102, 126, 234, 0.05));
+}
+
+/* Preview card layout */
+.preview-card-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.preview-card-content {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Preview card header */
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.preview-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2d3748;
+}
+
+/* Status indicator (pulsing dot) */
+.preview-status-indicator {
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(56, 239, 125, 0.5);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+/* Preview info section */
+.preview-info-section {
+  background: rgba(102, 126, 234, 0.05);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border-left: 4px solid #667eea;
+}
+
+.preview-info-label {
+  margin: 0;
+  color: #4a5568;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Tunnel URL */
+.preview-tunnel-url {
+  margin-bottom: 0.75rem;
+}
+
+.preview-tunnel-link {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  word-break: break-all;
+}
+
+/* Metrics grid */
+.preview-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.preview-metric-item p {
+  margin: 0;
+}
+
+.preview-metric-label {
+  color: #718096;
+  font-size: 0.8rem;
+}
+
+.preview-metric-value {
+  margin-top: 0.25rem !important;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Start time */
+.preview-start-time {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.preview-start-time-value {
+  margin: 0.25rem 0 0 0;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+/* Stop button */
+.btn-stop {
+  font-size: 0.85rem;
+  padding: 0.6rem 1rem;
+}
+
+/* ============================================
+   System Info Styles (SystemInfo)
+   ============================================ */
+
+/* System info card */
+.system-info-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(102, 126, 234, 0.05));
+}
+
+/* Loading state */
+.system-loading-text {
+  margin-top: 1rem;
+  text-align: center;
+  color: #4a5568;
+}
+
+/* System info grid */
+.system-info-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* User section */
+.system-user-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.system-user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.system-user-avatar {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.system-user-details p {
+  margin: 0;
+}
+
+.system-user-label {
+  font-size: 0.75rem;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.system-user-name {
+  margin-top: 0.25rem !important;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.btn-logout {
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Health status card */
+.system-health-card {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  border-radius: 0.75rem;
+  color: white;
+}
+
+.system-health-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.system-health-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.system-health-details p {
+  margin: 0;
+}
+
+.system-health-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.system-health-status {
+  margin-top: 0.25rem !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Security config card */
+.system-security-card {
+  padding: 1.5rem;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 0.75rem;
+  border-left: 4px solid #667eea;
+}
+
+.system-section-title {
+  margin: 0 0 0.75rem 0;
+  color: #4a5568;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.system-security-label {
+  margin: 0;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.system-security-path {
+  margin: 0.5rem 0 0 0;
+  color: #2d3748;
+  font-family: 'Monaco', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.system-security-note {
+  margin: 1rem 0 0 0;
+  color: #4a5568;
+  font-size: 0.85rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 0.5rem;
+}
+
+/* Features card */
+.system-features-card {
+  padding: 1.5rem;
+  background: linear-gradient(to right, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+  border-radius: 0.75rem;
+}
+
+.system-features-card .system-section-title {
+  margin-bottom: 1rem;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.system-features-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.system-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.system-feature-icon {
+  font-size: 1.25rem;
+}
+
+.system-feature-content p {
+  margin: 0;
+}
+
+.system-feature-title {
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.system-feature-description {
+  margin-top: 0.25rem !important;
+  color: #4a5568;
+  font-size: 0.85rem;
+}
+
+/* Footer */
+.system-footer {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid rgba(102, 126, 234, 0.1);
+  text-align: center;
+}
+
+.system-version {
+  margin: 0;
+  color: #a0aec0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.system-copyright {
+  margin: 0.5rem 0 0 0;
+  color: #cbd5e0;
+  font-size: 0.75rem;
+}
+
+/* ============================================
+   Responsive Adjustments for Preview & System
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Preview card responsive */
+  .preview-card-layout {
+    flex-direction: column;
+  }
+
+  .preview-card-content {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .preview-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* System info responsive */
+  .system-user-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-logout {
+    width: 100%;
+    justify-content: center;
+  }
 }
