@@ -95,4 +95,32 @@ export class DingTalkNotifier {
   async notifyDeployFailed(errorMsg: string): Promise<void> {
     await this.sendText(`❌ 部署失败: ${errorMsg}`);
   }
+
+  /**
+   * 通知预览启动成功
+   */
+  async notifyPreviewStarted(info: {
+    alias: string;
+    port: number;
+    tunnelUrl: string;
+    pid: number;
+    tunnelPid: number;
+  }): Promise<void> {
+    const message =
+      `## ✅ 预览已启动\n\n` +
+      `**别名**: ${info.alias}\n` +
+      `**端口**: ${info.port}\n` +
+      `**URL**: ${info.tunnelUrl}\n` +
+      `**进程 PID**: ${info.pid}\n` +
+      `**Tunnel PID**: ${info.tunnelPid}\n\n` +
+      `请访问上述 URL 预览您的项目`;
+    await this.sendMarkdown('预览服务', message);
+  }
+
+  /**
+   * 通知预览启动失败
+   */
+  async notifyPreviewStartFailed(alias: string, error: string): Promise<void> {
+    await this.sendText(`❌ 预览启动失败 [${alias}]: ${error}`);
+  }
 }

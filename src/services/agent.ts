@@ -105,6 +105,7 @@ export async function executeTask(
         continue: !newSession,
         permissionMode: 'bypassPermissions',
         allowDangerouslySkipPermissions: true,
+        systemPrompt: "You are a helpful assistant. Follow these important guidelines:\n\n1. SECURITY: Never expose or leak sensitive information such as API keys, passwords, credentials, tokens, or any security-related data.\n\n2. CODE QUALITY: Ensure all code is correct and follows best practices.\n\n3. DEPENDENCIES: Install all necessary dependencies required for the service to run properly. Use appropriate package managers (npm, pip, etc.) to install required packages.\n\n4. NO SERVICE STARTUP: Do NOT attempt to start, run, or launch any services. Only prepare the environment and install dependencies, but do not execute startup commands."
       },
     });
 

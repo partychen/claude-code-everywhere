@@ -5,6 +5,7 @@
 ## 特性
 
 - **远程触发** - 在钉钉群 @机器人发送任务，自动调用本地 Claude Code 执行
+- **Web 管理界面** - 直观的图形界面管理工作目录和预览服务，支持 JWT 认证
 - **工作目录管理** - 通过别名快速切换项目，支持简写命令
 - **预览管理** - 自动启动项目预览，通过 Cloudflare Tunnel 提供访问 URL
 - **命令简写** - 简洁易记的命令格式（`/d`, `/p`, `-desc`, `-cmd` 等）
@@ -43,8 +44,22 @@ DINGTALK_CLIENT_SECRET=your_client_secret
 # 所有工作目录必须在此根目录下
 ALLOWED_ROOT_DIR=/Users/yourname/projects
 
+# Web 管理界面配置（推荐）
+WEB_ENABLED=true
+WEB_PORT=3001
+WEB_ADMIN_USERNAME=admin
+WEB_ADMIN_PASSWORD_HASH=<使用 npm run hash-password 生成>
+WEB_JWT_SECRET=<使用 npm run hash-password 生成>
+WEB_JWT_EXPIRES_IN=2h
+
 # 数据库路径（可选，默认为项目 data/ 目录）
 # DB_PATH=~/custom/path
+```
+
+**生成密码哈希和 JWT 密钥**：
+
+```bash
+npm run hash-password
 ```
 
 **安全提示**：强烈建议配置 `ALLOWED_ROOT_DIR`，限制所有操作在指定目录下。详见 [SECURITY.md](SECURITY.md)。
@@ -55,9 +70,26 @@ ALLOWED_ROOT_DIR=/Users/yourname/projects
 npm start
 ```
 
-看到 `✅ 已连接到钉钉，等待消息...` 表示启动成功。
+看到 `✅ 已连接到钉钉，等待消息...` 和 `🌐 Web 管理界面: http://127.0.0.1:3001` 表示启动成功。
 
 ## 基本使用
+
+### Web 管理界面
+
+访问 `http://127.0.0.1:3001` 使用图形界面：
+
+- **登录认证**：使用配置的管理员用户名和密码登录
+- **工作目录管理**：添加、编辑、删除工作目录，设置默认目录
+- **预览服务管理**：启动、停止、查看预览服务状态
+- **系统信息**：查看系统状态、安全配置、核心功能
+
+界面特性：
+- 流畅的水滴滑动 Tab 切换动画
+- 响应式设计，支持移动端访问
+- JWT Token 自动过期管理（2小时）
+- 滑动操作编辑/删除工作目录
+
+### 钉钉远程控制
 
 ### 配置工作目录
 

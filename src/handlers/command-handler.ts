@@ -1,5 +1,7 @@
 import { WorkingDirectoryRepository } from '../repositories/working-directory.js';
 import { PreviewService } from '../services/preview.js';
+import { DingTalkNotifier } from '../services/notifier.js';
+import { WorkingDirectory } from '../types/database.js';
 import { logger } from '../utils/logger.js';
 import { PathValidator } from '../utils/path.js';
 import { HELP_TEXT } from '../constants/help.js';
@@ -17,6 +19,7 @@ export interface CommandResult {
  */
 export class CommandHandler {
   private pathValidator: PathValidator;
+  private webhookUrl?: string;
 
   constructor(
     private workingDirRepo: WorkingDirectoryRepository,
@@ -24,6 +27,13 @@ export class CommandHandler {
     allowedRootDir: string
   ) {
     this.pathValidator = new PathValidator(allowedRootDir);
+  }
+
+  /**
+   * 设置 Webhook URL（用于异步通知）
+   */
+  setWebhookUrl(url: string): void {
+    this.webhookUrl = url;
   }
 
   /**
@@ -481,17 +491,38 @@ ${dir.preview_enabled && dir.start_cmd ? `**启动命令**: ${dir.start_cmd}\n` 
       };
     }
 
+    // 立即返回
+    const immediateResult = {
+      success: true,
+      message: `🚀 预览服务正在启动...\n\n别名: ${alias}\n请稍候，启动完成后将发送预览链接`,
+    };
+
+    // 异步执行启动流程（不阻塞）
+    this.startPreviewAsync(workingDir, this.webhookUrl).catch((err) => {
+      logger.error('[PreviewStart] 后台启动失败:', err);
+    });
+
+    return immediateResult;
+  }
+
+  /**
+   * 异步启动预览（后台执行）
+   */
+  private async startPreviewAsync(
+    workingDir: WorkingDirectory,
+    webhookUrl?: string
+  ): Promise<void> {
+    const notifier = new DingTalkNotifier(webhookUrl || '');
+
     try {
+      logger.info(`[PreviewStart] 开始启动预览: ${workingDir.alias}`);
       const info = await this.previewService.start(workingDir);
-      return {
-        success: true,
-        message: `✅ 预览已启动\n\n**别名**: ${info.alias}\n**端口**: ${info.port}\n**URL**: ${info.tunnelUrl}\n**进程 PID**: ${info.pid}\n**Tunnel PID**: ${info.tunnelPid}`,
-      };
+      await notifier.notifyPreviewStarted(info);
+      logger.info(`[PreviewStart] 预览启动成功: ${workingDir.alias}`);
     } catch (error) {
-      return {
-        success: false,
-        message: `预览启动失败: ${error instanceof Error ? error.message : String(error)}`,
-      };
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(`[PreviewStart] 预览启动失败: ${workingDir.alias}`, errorMsg);
+      await notifier.notifyPreviewStartFailed(workingDir.alias, errorMsg);
     }
   }
 

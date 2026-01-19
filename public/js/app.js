@@ -13,7 +13,11 @@ function switchTab(tabName) {
   // 显示目标内容
   document.getElementById(`page-${tabName}`).classList.remove('hidden');
   // 激活目标按钮
-  document.getElementById(`tab-${tabName}`).classList.add('active');
+  const activeBtn = document.getElementById(`tab-${tabName}`);
+  activeBtn.classList.add('active');
+
+  // 更新滑动指示器位置
+  updateTabIndicator(activeBtn);
 
   // 控制浮动按钮显示
   const fabAdd = document.getElementById('fab-add');
@@ -29,6 +33,24 @@ function switchTab(tabName) {
     fabAdd.classList.remove('show');
     fabMenuPreview.classList.remove('show');
   }
+}
+
+// 更新滑动指示器位置
+function updateTabIndicator(activeBtn) {
+  const indicator = document.getElementById('tab-indicator');
+  const tabNav = document.querySelector('.tab-nav');
+
+  // 获取按钮相对于父容器的位置
+  const btnRect = activeBtn.getBoundingClientRect();
+  const navRect = tabNav.getBoundingClientRect();
+
+  // 计算相对位置（考虑 padding）
+  const left = btnRect.left - navRect.left;
+  const width = btnRect.width;
+
+  // 应用动画
+  indicator.style.width = `${width}px`;
+  indicator.style.transform = `translateX(${left}px)`;
 }
 
 // 初始化
@@ -118,4 +140,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // 默认加载工作目录页并显示浮动按钮
   directoryList.render();
   document.getElementById('fab-add').classList.add('show');
+
+  // 初始化滑动指示器位置
+  const firstActiveBtn = document.querySelector('.tab-btn.active');
+  if (firstActiveBtn) {
+    updateTabIndicator(firstActiveBtn);
+  }
+
+  // 监听窗口大小变化，更新指示器位置
+  window.addEventListener('resize', () => {
+    const currentActiveBtn = document.querySelector('.tab-btn.active');
+    if (currentActiveBtn) {
+      updateTabIndicator(currentActiveBtn);
+    }
+  });
 });

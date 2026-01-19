@@ -4,7 +4,18 @@
       "Bash(npm install:*)",
       "Bash(npm start)",
       "Bash(Start-Sleep -Seconds 3)",
-      "Bash(Get-Content C:UsersjuchenAppDataLocalTempclaudec--Users-juchen-Code-remote-claudetasksba6d087.output -Tail 30)"
+      "Bash(Get-Content C:UsersjuchenAppDataLocalTempclaudec--Users-juchen-Code-remote-claudetasksba6d087.output -Tail 30)",
+      "Bash(git push:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(tasklist /FI \"PID eq 22036\" /FO CSV)",
+      "Bash(cmd /c \"tasklist /FI \"\"PID eq 27792\"\" /FO CSV\")",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /F /T /PID 22036\")",
+      "Bash(cmd /c \"taskkill /F /T /PID 27792\")",
+      "Bash(powershell -Command \"Stop-Process -Id 22036 -Force\")",
+      "Bash(powershell -Command \"Stop-Process -Id 27792 -Force\")",
+      "Bash(powershell -Command \"$proc = Get-Process -Id 27792; Stop-Process -Id $proc.Id -Force; Get-CimInstance Win32_Process | Where-Object { $_ParentProcessId -eq 27792 } | ForEach-Object { Stop-Process -Id $_ProcessId -Force }\")"
     ]
   }
 }

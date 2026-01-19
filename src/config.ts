@@ -15,8 +15,13 @@ export interface Config {
   web: {
     enabled: boolean;
     port: number;
-    authToken?: string;
     allowedOrigins: string;
+    auth: {
+      username: string;
+      passwordHash: string;
+      jwtSecret: string;
+      jwtExpiresIn: string;
+    };
   };
 }
 
@@ -54,8 +59,13 @@ export function loadConfig(): Config {
     web: {
       enabled: getEnvOrDefault('WEB_ENABLED', 'true') === 'true',
       port: parseInt(getEnvOrDefault('WEB_PORT', '3001')),
-      authToken: process.env.WEB_AUTH_TOKEN,
       allowedOrigins: getEnvOrDefault('WEB_ALLOWED_ORIGINS', 'http://localhost:3001'),
+      auth: {
+        username: getEnvOrThrow('WEB_ADMIN_USERNAME'),
+        passwordHash: getEnvOrThrow('WEB_ADMIN_PASSWORD_HASH'),
+        jwtSecret: getEnvOrThrow('WEB_JWT_SECRET'),
+        jwtExpiresIn: getEnvOrDefault('WEB_JWT_EXPIRES_IN', '2h'),
+      },
     },
   };
 }

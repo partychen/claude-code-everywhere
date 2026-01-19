@@ -16,6 +16,15 @@ class ClaudeCodeEverywhereAPI {
     }
 
     const response = await fetch(`${this.baseURL}${path}`, options);
+
+    // 处理 401 未授权
+    if (response.status === 401) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('username');
+      window.location.href = '/login.html';
+      throw new Error('未授权，请重新登录');
+    }
+
     const data = await response.json();
 
     if (!response.ok) {

@@ -29,11 +29,11 @@ async function main() {
   if (config.web.enabled) {
     await startWebServer({
       port: config.web.port,
-      authToken: config.web.authToken,
       allowedOrigins: config.web.allowedOrigins,
       workingDirRepo,
       previewService,
       allowedRootDir: config.security.allowedRootDir,
+      auth: config.web.auth,
     });
   }
 

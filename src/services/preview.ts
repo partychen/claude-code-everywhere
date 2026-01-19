@@ -1,4 +1,4 @@
-import { ChildProcess, spawn } from 'child_process';
+import { ChildProcess, spawn, execSync } from 'child_process';
 import * as net from 'net';
 
 import { PreviewRepository } from '../repositories/preview.js';
@@ -52,9 +52,23 @@ export class PreviewService {
    */
   private isProcessAlive(pid: number): boolean {
     try {
-      // 发送信号 0 不会杀死进程，只是检查进程是否存在
-      process.kill(pid, 0);
-      return true;
+      if (process.platform === 'win32') {
+        // Windows: 使用 tasklist 检查进程是否存在
+        try {
+          const output = execSync(`tasklist /FI "PID eq ${pid}" /NH`, {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+          });
+          // 如果进程存在，输出会包含进程信息；不存在则输出 "INFO: No tasks..."
+          return !output.includes('No tasks') && output.includes(String(pid));
+        } catch {
+          return false;
+        }
+      } else {
+        // Unix/Linux/macOS: 发送信号 0 不会杀死进程，只是检查进程是否存在
+        process.kill(pid, 0);
+        return true;
+      }
     } catch (e: any) {
       return e.code !== 'ESRCH';
     }
@@ -140,14 +154,14 @@ export class PreviewService {
 
     // 清理内存中的引用
     const tunnelProc = this.tunnelProcesses.get(alias);
-    if (tunnelProc) {
-      tunnelProc.kill('SIGTERM');
+    if (tunnelProc && tunnelProc.pid) {
+      this.killProcess(tunnelProc.pid, alias, 'tunnel');
       this.tunnelProcesses.delete(alias);
     }
 
     const projectProc = this.projectProcesses.get(alias);
-    if (projectProc) {
-      projectProc.kill('SIGTERM');
+    if (projectProc && projectProc.pid) {
+      this.killProcess(projectProc.pid, alias, 'project');
       this.projectProcesses.delete(alias);
     }
 
@@ -374,8 +388,25 @@ export class PreviewService {
    */
   private killProcess(pid: number, alias: string, type: 'project' | 'tunnel'): void {
     try {
-      process.kill(pid, 'SIGTERM');
-      logger.info(`[Preview ${alias}] 已停止 ${type} 进程 (PID: ${pid})`);
+      if (process.platform === 'win32') {
+        // Windows: 使用 taskkill 强制终止进程树
+        // /F: 强制终止, /T: 终止进程树（包括子进程）, /PID: 指定进程ID
+        try {
+          execSync(`taskkill /F /T /PID ${pid}`, { stdio: 'ignore' });
+          logger.info(`[Preview ${alias}] 已停止 ${type} 进程树 (PID: ${pid})`);
+        } catch (killError: any) {
+          // 如果进程不存在，taskkill 会返回错误，这是正常情况
+          if (killError.status === 128) {
+            logger.debug(`[Preview ${alias}] ${type} 进程 ${pid} 已经不存在，跳过清理`);
+          } else {
+            logger.warn(`[Preview ${alias}] taskkill 执行失败 (PID ${pid}):`, killError.message);
+          }
+        }
+      } else {
+        // Unix/Linux/macOS: 使用 SIGTERM 信号
+        process.kill(pid, 'SIGTERM');
+        logger.info(`[Preview ${alias}] 已停止 ${type} 进程 (PID: ${pid})`);
+      }
     } catch (e: any) {
       // ESRCH 表示进程不存在，这是正常情况（可能已经被手动停止）
       if (e.code === 'ESRCH') {

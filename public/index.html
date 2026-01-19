@@ -12,6 +12,14 @@
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
+  <!-- 认证检查 -->
+  <script>
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+      window.location.href = '/login.html';
+    }
+  </script>
+
   <div style="max-width: 1200px; margin: 0 auto; padding: 1.5rem;">
     <!-- 导航栏 -->
     <div class="navbar glass-container">
@@ -26,6 +34,7 @@
     <!-- Tab 导航 -->
     <div class="glass-container" style="padding: 0.5rem; border-radius: 1rem; margin-bottom: 2rem;">
       <div class="tab-nav">
+        <div class="tab-indicator" id="tab-indicator"></div>
         <button id="tab-dirs" class="tab-btn active">📁 工作目录</button>
         <button id="tab-previews" class="tab-btn">🌐 预览服务</button>
         <button id="tab-system" class="tab-btn">⚙️ 系统信息</button>

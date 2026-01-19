@@ -3,19 +3,20 @@ import cors from 'cors';
 import { join } from 'path';
 import { WorkingDirectoryRepository } from '../repositories/working-directory.js';
 import { PreviewService } from '../services/preview.js';
-import { authMiddleware } from './middlewares/auth.js';
+import { jwtAuthMiddleware } from './middlewares/auth.js';
 import { errorHandler } from './middlewares/error-handler.js';
+import { createAuthRouter, AuthConfig } from './routes/auth.js';
 import { createDirectoriesRouter } from './routes/directories.js';
 import { createPreviewsRouter } from './routes/previews.js';
 import { createSystemRouter } from './routes/system.js';
 
 export interface WebServerConfig {
   port: number;
-  authToken?: string;
   allowedOrigins: string;
   workingDirRepo: WorkingDirectoryRepository;
   previewService: PreviewService;
   allowedRootDir: string;
+  auth: AuthConfig;
 }
 
 export async function startWebServer(config: WebServerConfig): Promise<void> {
@@ -29,10 +30,11 @@ export async function startWebServer(config: WebServerConfig): Promise<void> {
   const publicDir = join(import.meta.dirname, '../../public');
   app.use(express.static(publicDir));
 
-  // 认证 (可选)
-  if (config.authToken) {
-    app.use('/api', authMiddleware(config.authToken));
-  }
+  // 认证路由（无需认证）
+  app.use('/api/auth', createAuthRouter(config.auth));
+
+  // JWT 认证中间件（应用到 /api/*，除了 /api/auth）
+  app.use('/api', jwtAuthMiddleware(config.auth.jwtSecret));
 
   // API 路由
   app.use('/api/directories', createDirectoriesRouter(config));

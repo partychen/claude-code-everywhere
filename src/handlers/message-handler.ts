@@ -52,6 +52,8 @@ export class MessageHandler {
     // 检查是否为命令
     if (this.commandHandler.isCommand(content)) {
       logger.info('识别为命令，进入命令处理流程');
+      // 设置 webhook URL 用于异步通知
+      this.commandHandler.setWebhookUrl(data.sessionWebhook);
       const result = await this.commandHandler.handle(content);
 
       if (result.success) {
