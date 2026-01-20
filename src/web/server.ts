@@ -9,12 +9,16 @@ import { createAuthRouter, AuthConfig } from './routes/auth.js';
 import { createDirectoriesRouter } from './routes/directories.js';
 import { createPreviewsRouter } from './routes/previews.js';
 import { createSystemRouter } from './routes/system.js';
+import { createChatRouter } from './routes/chat.js';
+
+import { ChatConversationRepository } from '../repositories/chat-conversation.js';
 
 export interface WebServerConfig {
   port: number;
   allowedOrigins: string;
   workingDirRepo: WorkingDirectoryRepository;
   previewService: PreviewService;
+  chatConversationRepo: ChatConversationRepository;
   allowedRootDir: string;
   auth: AuthConfig;
 }
@@ -40,6 +44,7 @@ export async function startWebServer(config: WebServerConfig): Promise<void> {
   app.use('/api/directories', createDirectoriesRouter(config));
   app.use('/api/previews', createPreviewsRouter(config));
   app.use('/api/system', createSystemRouter(config));
+  app.use('/api/chat', createChatRouter(config));
 
   // 错误处理
   app.use(errorHandler);

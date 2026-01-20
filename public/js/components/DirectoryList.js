@@ -596,23 +596,20 @@ class DirectoryList {
   }
 
   /**
-   * Initializes click handler for collapsing card
+   * Initializes click handler for navigating to chat
    */
-  initCardClickHandler(wrapper, toggleBtn, actions, alias, state) {
+  initCardClickHandler(wrapper, _toggleBtn, _actions, alias, state) {
     wrapper.addEventListener('click', (e) => {
       if (state.hasDragged) {
         state.hasDragged = false;
         return;
       }
 
-      if (e.target.closest('.card-toggle-btn') || e.target.closest('.swipe-action-btn')) {
+      if (e.target.closest('.card-toggle-btn') || e.target.closest('.swipe-action-btn') || e.target.closest('button')) {
         return;
       }
 
-      if (this.currentOpenAlias === alias) {
-        this.clearInlineTransform(wrapper, toggleBtn);
-        this.collapseCard(wrapper, toggleBtn, actions);
-      }
+      window.location.href = `/chat.html?alias=${encodeURIComponent(alias)}`;
     });
   }
 

@@ -5,6 +5,7 @@ import { MessageHandler } from './handlers/message-handler.js';
 import { DatabaseService } from './services/database.js';
 import { WorkingDirectoryRepository } from './repositories/working-directory.js';
 import { PreviewRepository } from './repositories/preview.js';
+import { ChatConversationRepository } from './repositories/chat-conversation.js';
 import { PreviewService } from './services/preview.js';
 import { startWebServer } from './web/server.js';
 
@@ -17,6 +18,7 @@ async function main() {
   const dbService = new DatabaseService(config.db.path);
   const workingDirRepo = new WorkingDirectoryRepository(dbService.getDb());
   const previewRepo = new PreviewRepository(dbService.getDb());
+  const chatConversationRepo = new ChatConversationRepository(dbService.getDb());
 
   // 初始化预览服务
   const previewService = new PreviewService(previewRepo);
@@ -32,6 +34,7 @@ async function main() {
       allowedOrigins: config.web.allowedOrigins,
       workingDirRepo,
       previewService,
+      chatConversationRepo,
       allowedRootDir: config.security.allowedRootDir,
       auth: config.web.auth,
     });

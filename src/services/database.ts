@@ -53,6 +53,22 @@ export class DatabaseService {
         FOREIGN KEY (alias) REFERENCES working_directories(alias) ON DELETE CASCADE
       )
     `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS chat_conversations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        alias TEXT NOT NULL,
+        user_message TEXT NOT NULL,
+        assistant_message TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (alias) REFERENCES working_directories(alias) ON DELETE CASCADE
+      )
+    `);
+
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_chat_conversations_alias_created
+      ON chat_conversations(alias, created_at DESC)
+    `);
   }
 
   private migrateAddPreviewFields(): void {
