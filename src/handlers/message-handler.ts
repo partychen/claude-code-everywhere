@@ -7,9 +7,9 @@ import { PreviewService } from '../services/preview.js';
 import { AppState } from '../state.js';
 import { WorkingDirectory } from '../types/database.js';
 import { logger } from '../utils/logger.js';
-import { IntentRecognizer, IntentRecognition, OperationType } from '../services/llm/intent-recognizer.js';
-import { LLMFactory, LLMConfig } from '../services/llm/llm-factory.js';
-import { createPendingAction, PendingAction } from '../services/confirmation/pending-action.js';
+import { IntentRecognizer, IntentRecognition, OperationType } from '../services/llm-intent.js';
+import { LLMFactory, LLMConfig } from '../services/llm-factory.js';
+import { createPendingAction, PendingAction } from '../services/confirmation.js';
 import { PathValidator } from '../utils/path.js';
 import { OperationHandlers } from './operation-handlers.js';
 

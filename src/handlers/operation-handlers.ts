@@ -5,7 +5,7 @@ import { DingTalkNotifier } from '../services/notifier.js';
 import { WorkingDirectory } from '../types/database.js';
 import { logger } from '../utils/logger.js';
 import { PathValidator } from '../utils/path.js';
-import { IntentRecognition } from '../services/llm/intent-recognizer.js';
+import { IntentRecognition } from '../services/llm-intent.js';
 import { HELP_TEXT } from '../constants/prompts.js';
 
 /**
@@ -92,7 +92,7 @@ ${dir.description ? `- 描述: ${dir.description}\n` : ''}- 特性: ${features.j
       message += '\n';
     }
 
-    await notifier.sendMarkdown('工作目录列表', message.trim());
+    await notifier.sendMarkdown('工作目录列表', message);
     return { text: '目录列表已发送' };
   }
 
@@ -337,7 +337,7 @@ ${dir.preview_enabled && dir.start_cmd ? `**启动命令**: ${dir.start_cmd}\n` 
       message += `🤖 助手: ${conv.assistant_message.substring(0, 100)}${conv.assistant_message.length > 100 ? '...' : ''}\n\n`;
     }
 
-    await notifier.sendMarkdown('聊天历史', message.trim());
+    await notifier.sendMarkdown('聊天历史', message);
     return { text: '历史已发送' };
   }
 
@@ -400,7 +400,7 @@ ${dir.preview_enabled && dir.start_cmd ? `**启动命令**: ${dir.start_cmd}\n` 
    * 查看帮助
    */
   async handleHelp(notifier: DingTalkNotifier): Promise<{ text: string }> {
-    await notifier.sendMarkdown('使用说明', HELP_TEXT.trim());
+    await notifier.sendMarkdown('使用说明', HELP_TEXT);
     return { text: '帮助已发送' };
   }
 }

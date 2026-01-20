@@ -1,4 +1,4 @@
-import { ConfirmationManager } from './services/confirmation/confirmation-manager.js';
+import { ConfirmationManager } from './services/confirmation.js';
 
 /**
  * 应用状态管理

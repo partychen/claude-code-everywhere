@@ -22,7 +22,7 @@ export class DingTalkNotifier {
     await fetch(this.webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ msgtype: 'markdown', markdown: { title, text } }),
+      body: JSON.stringify({ msgtype: 'markdown', markdown: { title, text: text.trim() } }),
     });
   }
 
@@ -38,8 +38,8 @@ export class DingTalkNotifier {
   async notifyTaskComplete(prompt: string, output: string): Promise<void> {
     const message =
       `## ✅ 任务完成\n\n` +
-      `**任务**: ${prompt.slice(0, 100)}\n\n` +
-      `**结果**:\n\`\`\`\n${output.slice(0, 5000)}\n\`\`\``;
+      `**任务**: ${prompt}\n\n` +
+      `**结果**:\n\`\`\`\n${output}\n\`\`\``;
     await this.sendMarkdown('Claude Code 结果', message);
   }
 

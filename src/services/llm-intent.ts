@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { logger } from '../../utils/logger.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * 操作类型枚举
