@@ -4,11 +4,13 @@
 
 ## 特性
 
-- **远程触发** - 在钉钉群 @机器人发送任务，自动调用本地 Claude Code 执行
-- **Web 管理界面** - 直观的图形界面管理工作目录和预览服务，支持 JWT 认证
-- **工作目录管理** - 通过别名快速切换项目，支持简写命令
-- **预览管理** - 自动启动项目预览，通过 Cloudflare Tunnel 提供访问 URL
-- **命令简写** - 简洁易记的命令格式（`/d`, `/p`, `-desc`, `-cmd` 等）
+- **🤖 AI 智能交互** - 使用自然语言描述需求，AI 自动理解并执行操作
+- **📱 钉钉远程控制** - 在钉钉群 @机器人发送任务，自动调用本地 Claude Code 执行
+- **🌐 Web 管理界面** - 直观的图形界面管理工作目录和预览服务，支持 JWT 认证
+- **📁 工作目录管理** - 通过别名快速切换项目，支持默认目录设置
+- **🔍 预览管理** - 自动启动项目预览，通过 Cloudflare Tunnel 提供访问 URL
+- **💬 聊天历史** - 记录每个项目的对话历史，方便追溯和查询
+- **🔒 安全可控** - 智能确认机制，危险操作自动请求确认
 
 ## 快速开始
 
@@ -128,36 +130,41 @@ npm start
 
 #### 快速开始
 
+直接用自然语言描述需求，AI 会自动理解并执行：
+
 ```bash
 # 1. 添加工作目录
-@机器人 /d a blog my-blog -desc "个人博客" -d
+@机器人 添加目录 blog /path/to/blog 描述是个人博客 并设为默认
 
 # 2. 开始使用 Claude Code
 @机器人 帮我检查代码有没有 bug
 
 # 3. 启用预览功能（可选）
-@机器人 /d u blog -p on -cmd "npm run dev"
+@机器人 给 blog 启用预览，启动命令是 npm run dev
 ```
 
-#### 常用命令
+#### 常用操作示例
 
 ```bash
 # 工作目录管理
-@机器人 /d ls              # 查看所有目录
-@机器人 /d i blog          # 查看目录详情
-@机器人 /d d blog          # 设置默认目录
+@机器人 列出所有目录
+@机器人 查看 blog 的详情
+@机器人 把 blog 设为默认目录
 
-# 切换目录
-@机器人 [dir:blog] 写一篇新文章
-@机器人 [dir:api] 实现用户认证
+# 开发任务
+@机器人 在 blog 项目中优化性能
+@机器人 帮我在 api 项目里添加用户认证
 
 # 预览管理
-@机器人 /p s blog          # 启动预览
-@机器人 /p st              # 查看状态
-@机器人 /p x blog          # 停止预览
+@机器人 启动 blog 的预览
+@机器人 查看预览状态
+@机器人 停止 blog 的预览
+
+# 查看历史
+@机器人 查看 blog 的聊天历史
 
 # 帮助
-@机器人 /h                 # 查看完整帮助
+@机器人 帮助
 ```
 
 > 📖 完整使用文档请查看 [docs/USAGE.md](docs/USAGE.md)
@@ -167,7 +174,7 @@ npm start
 ### 博客写作
 
 ```bash
-@机器人 /d a blog my-blog -p -cmd "npm run dev" -d
+@机器人 添加目录 blog /path/to/blog 启用预览 启动命令是 npm run dev 并设为默认
 @机器人 写一篇关于 TypeScript 的文章
 # → Claude Code 完成后自动启动预览并提供访问 URL
 ```
@@ -175,17 +182,17 @@ npm start
 ### 多项目管理
 
 ```bash
-@机器人 /d a web client/web-app
-@机器人 /d a api server/api
-@机器人 [dir:web] 添加登录页面
-@机器人 [dir:api] 实现用户认证
+@机器人 添加目录 web /path/to/web-app
+@机器人 添加目录 api /path/to/api
+@机器人 在 web 项目中添加登录页面
+@机器人 在 api 项目里实现用户认证
 ```
 
 ### 移动办公
 
 ```bash
 # 在咖啡厅用手机处理紧急需求
-@机器人 [dir:api] 紧急修复登录接口的 bug
+@机器人 在 api 项目中紧急修复登录接口的 bug
 ```
 
 > 📖 更多使用场景和详细说明请查看 [docs/USAGE.md](docs/USAGE.md)
@@ -193,11 +200,17 @@ npm start
 ## 架构
 
 ```
-钉钉群 @机器人 → 钉钉 Stream → 本地 Worker → Claude Agent SDK → 钉钉回复
-                                ↓
-                           SQLite 数据库
-                   (工作目录配置 + 预览服务管理)
+钉钉群 @机器人 → 钉钉 Stream → 本地 Worker → AI 意图识别 → Claude Agent SDK → 钉钉回复
+                                         ↓
+                                    SQLite 数据库
+                          (工作目录 + 预览服务 + 聊天历史)
 ```
+
+核心流程：
+1. **消息接收**：通过钉钉 Stream 接收用户消息
+2. **AI 意图识别**：使用 LLM 分析自然语言，识别用户意图和操作类型
+3. **操作执行**：根据识别结果调用对应的处理器（目录管理、预览控制、任务执行等）
+4. **结果反馈**：通过钉钉 Webhook 发送执行结果
 
 ## 常见问题
 
@@ -205,13 +218,17 @@ npm start
 
 A: 查看 [docs/PREVIEW_SETUP.md](docs/PREVIEW_SETUP.md) 获取详细安装说明。
 
+**Q: 如何使用自然语言操作？**
+
+A: 直接描述需求即可，无需记忆命令格式。例如："添加目录 blog /path/to/blog"、"启动 blog 的预览"、"查看聊天历史"。AI 会自动理解并执行。
+
 **Q: 删除工作目录配置会删除实际文件吗？**
 
-A: 不会。`/d rm` 只会删除数据库中的配置，不影响实际文件。
+A: 不会。删除操作只会删除数据库中的配置，不影响实际文件系统。
 
 **Q: 可以同时处理多个任务吗？**
 
-A: 不可以。为了避免冲突，同一时间只能处理一个任务。
+A: 不可以。为了避免冲突，同一时间只能处理一个 Claude Code 任务。
 
 > 📖 更多常见问题请查看 [docs/USAGE.md](docs/USAGE.md#常见问题)
 
@@ -230,10 +247,10 @@ npx tsc --noEmit
 
 ## 文档
 
-- [docs/USAGE.md](docs/USAGE.md) - 完整使用手册
-- [docs/PREVIEW_SETUP.md](docs/PREVIEW_SETUP.md) - 预览功能配置指南
-- [docs/SECURITY.md](docs/SECURITY.md) - 安全配置指南
-- [CLAUDE.md](CLAUDE.md) - Claude Code 项目指南
+- [docs/USAGE.md](docs/USAGE.md) - 完整使用手册（AI 智能交互、工作目录、预览功能）
+- [docs/PREVIEW_SETUP.md](docs/PREVIEW_SETUP.md) - 预览功能配置指南（Cloudflare Tunnel 安装和使用）
+- [docs/SECURITY.md](docs/SECURITY.md) - 安全配置指南（路径限制、权限控制）
+- [.claude/CLAUDE.md](.claude/CLAUDE.md) - 项目开发指南（架构、编码规范）
 - [tests/README.md](tests/README.md) - 测试套件说明
 
 ## License

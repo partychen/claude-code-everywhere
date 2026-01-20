@@ -28,7 +28,8 @@
       "Read(//Users/chenjunkui/Project/claude-code-everywhere/**)",
       "Bash(sqlite3:*)",
       "Bash(kill:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add chat feature with conversation history and Teams integration planning\n\n- Add chat UI with conversation interface \\(chat.html, chat.js\\)\n- Implement chat conversation repository and database schema\n- Add chat API routes with message history endpoints\n- Create chat feature documentation\n- Add Teams integration planning documentation\n- Install Playwright for UI testing capabilities\n- Update DirectoryList to navigate to chat on card click\n- Remove deprecated Agents.md \\(replaced by .claude/CLAUDE.md\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

@@ -43,12 +43,14 @@ async function main() {
   // 初始化状态
   const state = new AppState();
 
-  // 初始化消息处理器（传入数据库仓库、预览服务和安全配置）
+  // 初始化消息处理器
   const messageHandler = new MessageHandler(
     state,
     workingDirRepo,
+    chatConversationRepo,
     previewService,
-    config.security.allowedRootDir
+    config.security.allowedRootDir,
+    config.llm
   );
 
   // 打印启动信息

@@ -89,22 +89,23 @@ Claude Code Everywhere 使用 Cloudflare Tunnel 的临时隧道功能（Quick Tu
 ### 添加新项目时配置
 
 ```bash
-@机器人 /d a blog my-blog -p -cmd "npm run dev" -po 3000
+@机器人 添加目录 blog /path/to/blog 启用预览 启动命令是 npm run dev 端口是 3000
 ```
 
-参数说明：
-- `-p`：启用预览功能
-- `-cmd "命令"`：项目启动命令（必需）
-- `-po 端口号`：项目监听端口（默认 3000）
+或者使用自然语言：
+
+```bash
+@机器人 给我添加一个博客项目，路径是 /path/to/blog，启用预览功能，用 npm run dev 启动，端口 3000
+```
 
 ### 更新现有项目配置
 
 ```bash
 # 启用预览
-@机器人 /d u blog -p on -cmd "npm run dev" -po 3000
+@机器人 给 blog 启用预览，启动命令是 npm run dev，端口 3000
 
 # 禁用预览
-@机器人 /d u blog -p off
+@机器人 禁用 blog 的预览
 ```
 
 ## 预览功能使用
@@ -127,27 +128,29 @@ Claude Code Everywhere 使用 Cloudflare Tunnel 的临时隧道功能（Quick Tu
 #### 启动预览
 
 ```bash
-@机器人 /p s blog
+@机器人 启动 blog 的预览
+@机器人 预览 blog 项目
 ```
 
 #### 查看预览状态
 
 ```bash
 # 查看所有运行中的预览
-@机器人 /p st
+@机器人 查看预览状态
+@机器人 预览服务的状态
 
 # 查看指定项目的预览状态
-@机器人 /p st blog
+@机器人 blog 的预览状态
 ```
 
 #### 停止预览
 
 ```bash
 # 停止指定项目的预览
-@机器人 /p x blog
+@机器人 停止 blog 的预览
 
 # 停止所有预览
-@机器人 /p xa
+@机器人 停止所有预览
 ```
 
 ## 支持的项目类型
@@ -157,31 +160,31 @@ Claude Code Everywhere 使用 Cloudflare Tunnel 的临时隧道功能（Quick Tu
 ### Node.js 项目
 
 ```bash
-@机器人 /d a web my-web-app -p -cmd "npm run dev" -po 3000
+@机器人 添加目录 web /path/to/web-app 启用预览 启动命令是 npm run dev 端口 3000
 ```
 
 ### Python 项目
 
 ```bash
-@机器人 /d a api my-flask-app -p -cmd "python app.py" -po 5000
+@机器人 添加目录 api /path/to/flask-app 启用预览 启动命令是 python app.py 端口 5000
 ```
 
 ### Go 项目
 
 ```bash
-@机器人 /d a go-app my-go-app -p -cmd "go run main.go" -po 8080
+@机器人 添加目录 go-app /path/to/go-app 启用预览 启动命令是 go run main.go 端口 8080
 ```
 
 ### 静态网站服务器
 
 ```bash
-@机器人 /d a static my-site -p -cmd "python -m http.server 8000" -po 8000
+@机器人 添加目录 static /path/to/site 启用预览 启动命令是 python -m http.server 8000 端口 8000
 ```
 
 ### Docker 容器
 
 ```bash
-@机器人 /d a docker my-docker-app -p -cmd "docker-compose up" -po 3000
+@机器人 添加目录 docker /path/to/docker-app 启用预览 启动命令是 docker-compose up 端口 3000
 ```
 
 ## 常见问题
@@ -197,9 +200,9 @@ A: 检查以下几点：
 
 2. **启动命令是否正确**
    ```bash
-   @机器人 /d i blog
+   @机器人 查看 blog 的详情
    ```
-   检查 `start_cmd` 配置
+   检查启动命令配置
 
 3. **端口是否被占用**
    ```bash
@@ -225,7 +228,7 @@ A: 有两种方式：
 
 1. 使用命令停止：
    ```bash
-   @机器人 /p xa
+   @机器人 停止所有预览
    ```
 
 2. 重启 Claude Code Everywhere 服务：
@@ -235,7 +238,7 @@ A: 有两种方式：
 
 A: 不会。预览 URL 的有效期取决于：
 
-1. **手动停止**：运行 `/p x` 命令
+1. **手动停止**：停止预览时 URL 失效
 2. **服务重启**：Claude Code Everywhere 服务重启时会停止所有预览
 3. **进程崩溃**：如果项目进程或 Tunnel 进程崩溃，URL 会失效
 
@@ -279,7 +282,7 @@ npm run dev
 然后配置：
 
 ```bash
-@机器人 /d a blog my-blog -p -cmd "./start-preview.sh" -po 3000
+@机器人 添加目录 blog /path/to/blog 启用预览 启动命令是 ./start-preview.sh 端口 3000
 ```
 
 ### 环境变量
@@ -297,7 +300,7 @@ npm run dev
 ### 查看运行中的预览服务
 
 ```bash
-@机器人 /p st
+@机器人 查看预览状态
 ```
 
 ### 查看进程状态

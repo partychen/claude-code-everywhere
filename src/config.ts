@@ -1,6 +1,15 @@
 import 'dotenv/config';
 import { resolve } from 'path';
 
+export interface LLMConfig {
+  provider: 'volcengine' | 'openai' | 'anthropic' | 'local' | 'qwen';
+  model: string;
+  apiKey?: string;
+  baseURL?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
 export interface Config {
   dingtalk: {
     clientId: string;
@@ -23,6 +32,7 @@ export interface Config {
       jwtExpiresIn: string;
     };
   };
+  llm: LLMConfig;
 }
 
 function getEnvOrThrow(key: string): string {
@@ -66,6 +76,16 @@ export function loadConfig(): Config {
         jwtSecret: getEnvOrThrow('WEB_JWT_SECRET'),
         jwtExpiresIn: getEnvOrDefault('WEB_JWT_EXPIRES_IN', '2h'),
       },
+    },
+    llm: {
+      provider: getEnvOrDefault('LLM_PROVIDER', 'volcengine') as LLMConfig['provider'],
+      model: getEnvOrDefault('LLM_MODEL', 'doubao-pro-32k'),
+      apiKey: process.env.LLM_API_KEY,
+      baseURL: process.env.LLM_BASE_URL,
+      temperature: process.env.LLM_TEMPERATURE
+        ? parseFloat(process.env.LLM_TEMPERATURE)
+        : 0.3,
+      maxTokens: process.env.LLM_MAX_TOKENS ? parseInt(process.env.LLM_MAX_TOKENS) : 1024,
     },
   };
 }
