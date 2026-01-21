@@ -9,6 +9,49 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/images/logo-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/logo.png">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            glass: {
+              50: 'rgba(255, 255, 255, 0.05)',
+              100: 'rgba(255, 255, 255, 0.1)',
+              200: 'rgba(255, 255, 255, 0.2)',
+              300: 'rgba(255, 255, 255, 0.3)',
+            },
+            primary: {
+              50: '#f5f7ff',
+              100: '#ebf0ff',
+              200: '#d6e0ff',
+              300: '#b3c7ff',
+              400: '#8aa4ff',
+              500: '#7B92FF',
+              600: '#5d74f0',
+              700: '#4a5ed6',
+              800: '#3d4db3',
+              900: '#334190',
+            },
+            secondary: {
+              50: '#faf5ff',
+              100: '#f3ebff',
+              200: '#e9d6ff',
+              300: '#d8b4ff',
+              400: '#C29BFF',
+              500: '#a871f0',
+              600: '#8d52d6',
+              700: '#7440b3',
+              800: '#5f3590',
+              900: '#4e2d70',
+            }
+          },
+          backdropBlur: {
+            xs: '2px',
+          }
+        }
+      }
+    }
+  </script>
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
@@ -32,7 +75,7 @@
     </div>
 
     <!-- Tab 导航 -->
-    <div class="glass-container" style="padding: 0.5rem; border-radius: 1rem; margin-bottom: 2rem;">
+    <div class="glass-container" style="padding: 0.5rem; border-radius: 0.2rem; margin-bottom: 2rem;">
       <div class="tab-nav">
         <div class="tab-indicator" id="tab-indicator"></div>
         <button id="tab-dirs" class="tab-btn active">📁 工作目录</button>
